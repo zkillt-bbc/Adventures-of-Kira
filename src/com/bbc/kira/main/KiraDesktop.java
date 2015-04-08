@@ -1,3 +1,4 @@
+package com.bbc.kira.main;
 
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;

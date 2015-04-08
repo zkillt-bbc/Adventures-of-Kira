@@ -1,6 +1,9 @@
+package com.bbc.kira.main;
 
 
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Game implements ApplicationListener{
 
@@ -8,7 +11,22 @@ public class Game implements ApplicationListener{
 	public static final int WINDOW_WIDTH = 1920;
 	public static final int WINDOW_HEIGHT = 1080;
 
-
+	
+	private SpriteBatch sb;
+	private OrthographicCamera cam;
+	private OrthographicCamera hudCam;
+	
+	public SpriteBatch getSpriteBatch() {
+		return sb;
+	}
+	
+	public OrthographicCamera getCamera() {
+		return cam;
+	}
+	
+	public OrthographicCamera getHUDCamera() {
+		return hudCam;
+	}
 	
 	@Override
 	public void create() {
