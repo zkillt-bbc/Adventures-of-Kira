@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="14" tilewidth="70" tileheight="70" nextobjectid="41">
+ <tileset firstgid="1" source="../../../Tiled/tilesets/Tiles.tsx"/>
+ <tileset firstgid="157" source="../../../Tiled/tilesets/Backgrounds.tsx"/>
+ <layer name="background" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYBjcYN4gYFMLzKGBmUMdDKf4HQWYYDR+hzcYjd/hDQZ7/AIAFncijw==
+  </data>
+ </layer>
+ <layer name="ground" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAeZGDBgxnMpIMdMyjQSw/3gewg1o2KDKhxSi/3EeNGkNtEGVDdRE/3wdyILQ9kILltIN1HDh7p7hsFo2AUDF0AAMHCIys=
+  </data>
+ </layer>
+ <layer name="schraeg" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYBjcgHOgHUAEGHUjdcBQcOMoGAWjYBSMgsEBAAq3ACU=
+  </data>
+ </layer>
+ <layer name="decoartion" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFowAVdEPxYAUcUEwvMI1E9YPdffQGg919o2AUjIKhCQDAhAL5
+  </data>
+ </layer>
+ <objectgroup color="#a0a0a4" name="coins">
+  <object id="33" x="580" y="93.3333">
+   <ellipse/>
+  </object>
+  <object id="34" x="436" y="173.333">
+   <ellipse/>
+  </object>
+  <object id="35" x="653.333" y="228">
+   <ellipse/>
+  </object>
+  <object id="36" x="569.333" y="249.333">
+   <ellipse/>
+  </object>
+  <object id="37" x="642.667" y="121.333">
+   <ellipse/>
+  </object>
+  <object id="38" x="430.667" y="78.6667">
+   <ellipse/>
+  </object>
+  <object id="39" x="429.333" y="280">
+   <ellipse/>
+  </object>
+  <object id="40" x="329.333" y="154.667">
+   <ellipse/>
+  </object>
+ </objectgroup>
+</map>

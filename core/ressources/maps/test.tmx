@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="14" tilewidth="70" tileheight="70" nextobjectid="15">
+ <tileset firstgid="1" source="../../../Tiled/tilesets/Tiles.tsx"/>
+ <tileset firstgid="157" source="../../../Tiled/tilesets/Backgrounds.tsx"/>
+ <layer name="background" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYBjcYB6V2IMBzBloBwxCMJzidxRggtH4Hd5gNH5HwUACAHlPD20=
+  </data>
+ </layer>
+ <layer name="ground" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAeZGDBgwnMxIJpDWaQoHYg3Aeyg1g3DpT7iHGjIsPAug/mRmx5AIRFB4H7yMEj3X2jYBSMgqELAGdMLLY=
+  </data>
+ </layer>
+ <layer name="schraeg" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYBjcgHOgHUAEGHUjdcBQcOMoGAWjYBSMgsEBAAq3ACU=
+  </data>
+ </layer>
+ <layer name="decoartion" width="40" height="14">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AU4APTBtoBBMCo+0bBKBgFIxEAAMwwAcM=
+  </data>
+ </layer>
+ <objectgroup color="#a0a0a4" name="coins"/>
+</map>
