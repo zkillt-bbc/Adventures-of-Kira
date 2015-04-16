@@ -3,7 +3,8 @@ package ch.bbcag.zkilt.client;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
-import ch.bbcag.zkilt.KiraMain;
+
+import ch.bbc.zkillt.KiraMain;
 
 public class HtmlLauncher extends GwtApplication {
 

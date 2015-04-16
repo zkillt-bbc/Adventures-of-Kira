@@ -2,9 +2,9 @@ package ch.bbc.zkillt.handlers;
 
 import java.util.Stack;
 
+import ch.bbc.zkillt.Game;
 import ch.bbc.zkillt.states.GameState;
 import ch.bbc.zkillt.states.Play;
-import ch.bbcag.zkilt.Game;
 
 public class GameStateManager {
 	

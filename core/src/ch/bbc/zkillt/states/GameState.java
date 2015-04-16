@@ -1,7 +1,7 @@
 package ch.bbc.zkillt.states;
 
+import ch.bbc.zkillt.Game;
 import ch.bbc.zkillt.handlers.GameStateManager;
-import ch.bbcag.zkilt.Game;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;

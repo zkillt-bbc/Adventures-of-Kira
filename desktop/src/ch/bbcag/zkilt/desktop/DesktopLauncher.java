@@ -1,6 +1,7 @@
 package ch.bbcag.zkilt.desktop;
 
-import ch.bbcag.zkilt.Game;
+import ch.bbc.zkillt.Game;
+
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
