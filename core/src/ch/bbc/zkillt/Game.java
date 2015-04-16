@@ -34,7 +34,7 @@ public class Game implements ApplicationListener {
 		
 		ressources = new Content();
 		ressources.loadTexture("ressources/images/player.png", "player");
-		ressources.loadTexture("ressources/images/coins.png", "coin");
+		ressources.loadTexture("ressources/images/coins2.png", "coin");
 		
 		sb = new SpriteBatch();
 		cam = new OrthographicCamera();

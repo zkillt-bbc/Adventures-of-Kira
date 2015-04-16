@@ -13,9 +13,9 @@ public class Coin extends B2DSprite {
 		super(body);
 		
 		Texture tex = Game.ressources.getTexture("coin");
-		TextureRegion[] sprites = TextureRegion.split(tex, 10, 10)[0];
+		TextureRegion[] sprites = TextureRegion.split(tex, 44, 40)[0];
 		
-		setAnimation(sprites, 1 / 12f);
+		setAnimation(sprites, 1 / 6f);
 		
 	}
 	

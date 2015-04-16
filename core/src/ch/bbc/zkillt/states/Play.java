@@ -31,9 +31,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
 public class Play extends GameState {
-	
-	private boolean debug = false;
-	
+		
 	private World world;
 	private Box2DDebugRenderer b2dr;
 	
@@ -138,10 +136,10 @@ public class Play extends GameState {
 		}
 		
 		// draw box2d
-		if(debug) {
-			b2dr.render(world, b2dCam.combined);
-		}
-		
+//		if(debug) {
+//			b2dr.render(world, b2dCam.combined);
+//		}
+//		
 	}
 	
 	public void dispose() {}
@@ -155,17 +153,16 @@ public class Play extends GameState {
 		// create player
 		bdef.position.set(500 / B2DVars.PPM, 700 / B2DVars.PPM);
 		bdef.type = BodyType.DynamicBody;
-		bdef.linearVelocity.set(.1f, 0);
 		Body body = world.createBody(bdef);
 		
-		shape.setAsBox(13 / B2DVars.PPM, 13 / B2DVars.PPM);
+		shape.setAsBox(32 / B2DVars.PPM, 64 / B2DVars.PPM);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
 		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN;
 		body.createFixture(fdef).setUserData("player");
 		
 		// create foot sensor
-		shape.setAsBox(13 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -13 / B2DVars.PPM), 0);
+		shape.setAsBox(13 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -64 / B2DVars.PPM), 0);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
 		fdef.filter.maskBits = B2DVars.BIT_GROUND;
