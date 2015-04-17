@@ -2,6 +2,7 @@ package ch.bbc.zkillt.entities;
 
 import ch.bbc.zkillt.handlers.Animation;
 import ch.bbc.zkillt.handlers.B2DVars;
+import ch.bbc.zkillt.states.Play;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -14,7 +15,8 @@ public class B2DSprite {
 	protected Animation animation;
 	protected float width;
 	protected float height;
-	
+	protected Play play;
+
 	public B2DSprite(Body body) {
 		this.body = body;
 		animation = new Animation();
@@ -32,7 +34,13 @@ public class B2DSprite {
 	
 	public void render(SpriteBatch sb) {
 		sb.begin();
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 25, body.getPosition().y *B2DVars.PPM - 66, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
+		if(body.getUserData().toString().contains("Player") == true) {
+		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 50, body.getPosition().y *B2DVars.PPM - 105, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
+	} else if (body.getUserData().toString().contains("Coin") == true) {
+		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
+	} else {
+		System.out.println("Fehler!");
+	}
 		sb.end();
 	}
 	

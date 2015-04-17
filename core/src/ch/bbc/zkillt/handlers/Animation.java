@@ -10,6 +10,7 @@ public class Animation {
 	private int currentFrame;
 	private int timesPlayed;
 	
+	
 	public Animation() {}
 	
 	public Animation(TextureRegion[] frames) {

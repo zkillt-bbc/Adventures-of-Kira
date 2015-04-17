@@ -1,14 +1,16 @@
 package ch.bbc.zkillt.states;
 
 import ch.bbc.zkillt.Game;
+import ch.bbc.zkillt.entities.B2DSprite;
 import ch.bbc.zkillt.entities.Coin;
 import ch.bbc.zkillt.entities.Player;
 import ch.bbc.zkillt.handlers.B2DVars;
 import ch.bbc.zkillt.handlers.GameStateManager;
 import ch.bbc.zkillt.handlers.MyContactListener;
-import ch.bbc.zkillt.handlers.MyInput;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
@@ -36,14 +38,20 @@ public class Play extends GameState {
 	private Box2DDebugRenderer b2dr;
 	
 	private OrthographicCamera b2dCam;
-	private MyContactListener cl;
+	public static MyContactListener cl;
 	
 	private TiledMap tileMap;
 	private float tileSize;
 	private OrthogonalTiledMapRenderer tmr;
 	
-	private Player player;
+	public static Player player;
 	private Array<Coin> Coins;
+	
+	private B2DSprite b2ds;
+	private Vector2 movement = new Vector2();
+	private float speed = 10;
+	private final float TIMESTEP = 1 / 60;
+	private final int VELOCITYITERATIONS = 8, POSITIONITERAIONS = 3;
 	
 	public Play(GameStateManager gsm) {
 		
@@ -66,29 +74,7 @@ public class Play extends GameState {
 		
 		// set up box2d cam
 		b2dCam = new OrthographicCamera();
-		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM, Game.WINDOW_HEIGHT / B2DVars.PPM);
-		
-	}
-	
-	public void handleInput() {
-		
-		// player jump
-		if(MyInput.isPressed(MyInput.JUMP)) {
-			if(cl.isPlayerOnGround()) {
-				player.getBody().applyForceToCenter(0, 140, true);
-			}
-		}
-		
-		// player jump
-		if(MyInput.isPressed(MyInput.LEFT)) {
-				player.getBody().applyForceToCenter(-20, 0, true);
-		}
-		
-		// player jump
-		if(MyInput.isPressed(MyInput.RIGHT)) {
-				player.getBody().applyForceToCenter(20, 0, true);
-		}
-		
+		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM, Game.WINDOW_HEIGHT / B2DVars.PPM);		
 	}
 	
 	public void update(float dt) {
@@ -106,6 +92,7 @@ public class Play extends GameState {
 			Coins.removeValue((Coin) b.getUserData(), true);
 			world.destroyBody(b);
 			player.collectCoin();
+			Game.score++;
 		}
 		bodies.clear();
 		
@@ -113,8 +100,7 @@ public class Play extends GameState {
 		
 		for(int i = 0; i < Coins.size; i++) {
 			Coins.get(i).update(dt);
-		}
-		
+		}		
 	}
 	
 	public void render() {
@@ -129,17 +115,84 @@ public class Play extends GameState {
 		// draw player
 		sb.setProjectionMatrix(cam.combined);
 		player.render(sb);
+		player.getBody().applyForceToCenter(movement, true);
 		
 		// draw Coins
 		for(int i = 0; i < Coins.size; i++) {
-			Coins.get(i).render(sb);
-		}
-		
-		// draw box2d
-//		if(debug) {
-//			b2dr.render(world, b2dCam.combined);
-//		}
-//		
+			Coins.get(i).render(sb);		
+//		// draw box2d world
+//		b2dr.render(world, b2dCam.combined);
+		}		
+		world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERAIONS);
+
+	}
+	
+	public void handleInput() {
+		Gdx.input.setInputProcessor(new InputProcessor() {
+			
+			@Override
+			public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean touchDragged(int screenX, int screenY, int pointer) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean scrolled(int amount) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean mouseMoved(int screenX, int screenY) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean keyUp(int keycode) {
+				switch(keycode) {
+				case Keys.A:
+				case Keys.D:
+					movement.x = 0;
+				}				
+				return true;
+			}
+			
+			@Override
+			public boolean keyTyped(char character) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public boolean keyDown(int keycode) {
+				switch(keycode) {
+				case Keys.SPACE:
+					if(cl.isPlayerOnGround()){
+						player.getBody().applyForceToCenter(0, 180, true);
+					} else {
+						System.out.println("Cannot jump in Air!");
+					}
+				case Keys.A:
+					movement.x = -speed;
+				case Keys.D:
+					movement.x = speed;
+				}
+				return true;
+			}
+		});
 	}
 	
 	public void dispose() {}
@@ -155,14 +208,14 @@ public class Play extends GameState {
 		bdef.type = BodyType.DynamicBody;
 		Body body = world.createBody(bdef);
 		
-		shape.setAsBox(32 / B2DVars.PPM, 64 / B2DVars.PPM);
+		shape.setAsBox(48 / B2DVars.PPM, 96 / B2DVars.PPM);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
 		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN;
 		body.createFixture(fdef).setUserData("player");
 		
 		// create foot sensor
-		shape.setAsBox(13 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -64 / B2DVars.PPM), 0);
+		shape.setAsBox(13 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -96 / B2DVars.PPM), 0);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
 		fdef.filter.maskBits = B2DVars.BIT_GROUND;
@@ -171,9 +224,8 @@ public class Play extends GameState {
 		
 		// create player
 		player = new Player(body);
-		
+		player.getBody().applyForceToCenter(movement, true);
 		body.setUserData(player);
-		
 	}
 	
 	private void createTiles() {
@@ -252,7 +304,7 @@ public class Play extends GameState {
 			bdef.position.set(x, y);
 			
 			CircleShape cshape = new CircleShape();
-			cshape.setRadius(8 / B2DVars.PPM);
+			cshape.setRadius(18 / B2DVars.PPM);
 			
 			fdef.shape = cshape;
 			fdef.isSensor = true;
@@ -267,5 +319,85 @@ public class Play extends GameState {
 			
 			body.setUserData(c);
 		}
+	}
+
+	public World getWorld() {
+		return world;
+	}
+
+	public void setWorld(World world) {
+		this.world = world;
+	}
+
+	public Box2DDebugRenderer getB2dr() {
+		return b2dr;
+	}
+
+	public void setB2dr(Box2DDebugRenderer b2dr) {
+		this.b2dr = b2dr;
+	}
+
+	public OrthographicCamera getB2dCam() {
+		return b2dCam;
+	}
+
+	public void setB2dCam(OrthographicCamera b2dCam) {
+		this.b2dCam = b2dCam;
+	}
+
+	public MyContactListener getCl() {
+		return cl;
+	}
+
+	public void setCl(MyContactListener cl) {
+		Play.cl = cl;
+	}
+
+	public TiledMap getTileMap() {
+		return tileMap;
+	}
+
+	public void setTileMap(TiledMap tileMap) {
+		this.tileMap = tileMap;
+	}
+
+	public float getTileSize() {
+		return tileSize;
+	}
+
+	public void setTileSize(float tileSize) {
+		this.tileSize = tileSize;
+	}
+
+	public OrthogonalTiledMapRenderer getTmr() {
+		return tmr;
+	}
+
+	public void setTmr(OrthogonalTiledMapRenderer tmr) {
+		this.tmr = tmr;
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public void setPlayer(Player player) {
+		Play.player = player;
+	}
+
+	public Array<Coin> getCoins() {
+		return Coins;
+	}
+
+	public void setCoins(Array<Coin> coins) {
+		Coins = coins;
+	}
+
+	public B2DSprite getB2ds() {
+		return b2ds;
+	}
+
+	public void setB2ds(B2DSprite b2ds) {
+		this.b2ds = b2ds;
 	}
 }

@@ -8,8 +8,8 @@ import com.badlogic.gdx.physics.box2d.Body;
 
 public class Player extends B2DSprite {
 	
-	private int numCoins;
-	private int totalCoins;
+	public static int numCoins;
+	public static int totalCoins;
 	
 	public Player(Body body) {
 		
@@ -22,9 +22,31 @@ public class Player extends B2DSprite {
 		
 	}
 	
-	public void collectCoin() { numCoins++; }
-	public int getNumCoin() { return numCoins; }
+	public void collectCoin() { setNumCoins(getNumCoins() + 1); System.out.println(getNumCoins()); }
+	public int getNumCoin() { return getNumCoins(); }
 	public void setTotalCoin(int i) { totalCoins = i; }
 	public int getTotalCoin() { return totalCoins; }
+
+	/**
+	 * @return the numCoins
+	 */
+	public static int getNumCoins() {
+		return numCoins;
+	}
+
+	/**
+	 * @param numCoins the numCoins to set
+	 */
+	public void setNumCoins(int numCoins) {
+		Player.numCoins = numCoins;
+	}
+
+	public static int getTotalCoins() {
+		return totalCoins;
+	}
+
+	public static void setTotalCoins(int totalCoins) {
+		Player.totalCoins = totalCoins;
+	}
 	
 }
