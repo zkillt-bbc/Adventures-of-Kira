@@ -10,16 +10,23 @@ public class Player extends B2DSprite {
 	
 	public static int numCoins;
 	public static int totalCoins;
-	
+	public Texture tex;
+	public TextureRegion[] sprites;
+	private int x = 3;
+
 	public Player(Body body) {
 		
 		super(body);
-		
-		Texture tex = Game.ressources.getTexture("player");
-		TextureRegion[] sprites = TextureRegion.split(tex, 32, 64)[3];
-		
+		tex = Game.ressources.getTexture("player");
+		sprites = TextureRegion.split(tex, 32, 64)[x];
 		setAnimation(sprites, 1 / 12f);
-		
+		System.out.println("Sprites: " + sprites.length);
+	}
+	
+	public void changeRegion(int x, float delay) {
+		sprites = TextureRegion.split(tex, 32, 64)[x];
+		setAnimation(sprites, delay);
+		this.x = x;
 	}
 	
 	public void collectCoin() { setNumCoins(getNumCoins() + 1); System.out.println(getNumCoins()); }

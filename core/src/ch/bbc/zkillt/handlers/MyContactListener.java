@@ -12,6 +12,8 @@ public class MyContactListener implements ContactListener {
 	
 	private int numFootContacts;
 	private Array<Body> bodiesToRemove;
+	private boolean water;
+	private int counter = 0;
 	
 	public MyContactListener() {
 		super();
@@ -28,9 +30,11 @@ public class MyContactListener implements ContactListener {
 		
 		if(fa.getUserData() != null && fa.getUserData().equals("foot")) {
 			numFootContacts++;
+			water = false;
 		}
 		if(fb.getUserData() != null && fb.getUserData().equals("foot")) {
 			numFootContacts++;
+			water = false;
 		}
 		
 		if(fa.getUserData() != null && fa.getUserData().equals("coin")) {
@@ -39,7 +43,24 @@ public class MyContactListener implements ContactListener {
 		if(fb.getUserData() != null && fb.getUserData().equals("coin")) {
 			bodiesToRemove.add(fb.getBody());
 		}
-		
+		if (fa.getUserData() != null && fb.getUserData().equals("water"))
+		{
+			if(counter < 1) {
+				water = true;
+				counter++;
+			}
+			else if (counter <= 1)
+			{
+				water = false;
+				System.out.println("counter = 1");
+				this.counter = 0;
+			}
+//			System.out.println("Wasser: " + water);
+		}
+//		if (fb.getUserData() != null && fa.getUserData().equals("water"))
+//		{
+//			water = true;
+//		}
 	}
 	
 	// called when two fixtures no longer collide
@@ -60,6 +81,7 @@ public class MyContactListener implements ContactListener {
 	}
 	
 	public boolean isPlayerOnGround() { return numFootContacts > 0; }
+	public boolean isInWater() { return water; }
 	public Array<Body> getBodiesToRemove() { return bodiesToRemove; }
 	
 	

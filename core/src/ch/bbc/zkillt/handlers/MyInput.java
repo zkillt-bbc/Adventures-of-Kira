@@ -10,7 +10,8 @@ public class MyInput {
 	public static final int BUTTON2 = 1;
 	public static final int LEFT = 2;
 	public static final int RIGHT = 3;
-	public static final int NUM_KEYS = 4;
+	public static final int SHIFT = 4;
+	public static final int NUM_KEYS = 33;
 	
 	static {
 		keys = new boolean[NUM_KEYS];

@@ -2,14 +2,13 @@ package ch.bbc.zkillt.handlers;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-public class Animation {
+public class Animation extends TextureRegion {
 	
-	private TextureRegion[] frames;
+	public TextureRegion[] frames;
 	private float time;
 	private float delay;
 	private int currentFrame;
-	private int timesPlayed;
-	
+	private int timesPlayed;	
 	
 	public Animation() {}
 	

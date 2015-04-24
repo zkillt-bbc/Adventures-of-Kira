@@ -9,7 +9,6 @@ import ch.bbc.zkillt.states.Play;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -41,6 +40,8 @@ public class Game implements ApplicationListener {
 		ressources = new Content();
 		ressources.loadTexture("ressources/images/player.png", "player");
 		ressources.loadTexture("ressources/images/coins3.png", "coin");
+		ressources.loadTexture("ressources/images/coins3.png", "wasser");
+
 		
 		this.sb = new SpriteBatch();
 		this.cam = new OrthographicCamera();
@@ -61,7 +62,7 @@ public class Game implements ApplicationListener {
 			if(c == '/') c = 10;
 			else if(c >= '0' && c <= '9') c -= '0';
 			else continue;
-			bmf.draw(sb, "Coins: " + Player.getNumCoins(), 25, 1050);
+			bmf.draw(sb, "Coins: " + Player.getNumCoins(), cam.position.x -900, cam.position.y + 500);
 		}
 	}
 	
@@ -77,20 +78,13 @@ public class Game implements ApplicationListener {
 			
 			bmf.setScale(2);
 			sb.begin();
-			drawString(sb, Player.getNumCoins() + " / 0", 25, 1050);
+			drawString(sb, Player.getNumCoins() + " / 0", cam.position.x * 100, cam.position.y * 100);
 			sb.end();
 			
-			cam.position.set(Play.player.getPosition().x * 100 + 480, Play.player.getPosition().y * 100  - 200, 0);
+			cam.position.set(Play.player.getPosition().x * 100 + 480, Play.player.getPosition().y * 100  - 100, 0);
 			cam.update();
-			
-			if(Play.cl.isPlayerOnGround() == false){
-			sb.begin();
-			bmf.draw(sb, "Cannot jump in air", Play.player.getPosition().x * 125, Play.player.getPosition().y * 100);
-			sb.end();
 			}
 		}
-		
-	}
 	
 	public void dispose() {
 		
