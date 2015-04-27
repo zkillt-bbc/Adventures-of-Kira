@@ -1,6 +1,5 @@
 package ch.bbc.zkillt.states;
 
-import box2dLight.PointLight;
 import box2dLight.RayHandler;
 import ch.bbc.zkillt.Game;
 import ch.bbc.zkillt.entities.Coin;
@@ -61,10 +60,9 @@ public class Play extends GameState {
 	float height = cam.viewportHeight * Game.WINDOW_HEIGHT;
 	
 	Contact contact;
-	array tilearray = 1; 
 	
 	float desiredVelocity;
-
+ 
 	
 	private RayHandler rayHandler;
 	
@@ -81,7 +79,7 @@ public class Play extends GameState {
 		rayHandler.setCombinedMatrix(cam.combined);
 		
 //		new ConeLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.WHITE, 2220,cam.position.x - 600, cam.position.y + 600, -45, 45);
-		new PointLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.YELLOW, 1200, cam.position.x, cam.position.y);
+//		new PointLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.YELLOW, 1200, cam.position.x, cam.position.y);
 		// create player
 		createPlayer();
 		
@@ -100,6 +98,16 @@ public class Play extends GameState {
 	}
 	
 	public void update(float dt) {
+		
+		
+		if (cl.isInWater()) {
+			gravity = 6;
+		} else {
+			gravity = 12;
+		}
+		
+		
+		System.out.println("Gravity: " + gravity);
 		
 		tmr.setView(cam.combined, x, y, width, height);
 		
@@ -149,15 +157,26 @@ public class Play extends GameState {
 
 		b2dCam.position.set(cam.position.x , cam.position.y, 0);
 		
-		// draw tile map
-		tmr.render();
-		// draw player
-		sb.setProjectionMatrix(cam.combined);
-		tmr.render(layers););
-		player.render(sb);
+		sb.begin();
+		tmr.getBatch().begin();
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("background"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("ground"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("schraeg"));
+		tmr.getBatch().end();
+		sb.end();
 		
-		//draw box2d world
-		b2dr.render(world, b2dCam.combined);
+		// draw player
+		player.render(sb);
+		sb.setProjectionMatrix(cam.combined);
+		
+		sb.begin();
+		tmr.getBatch().begin();
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("Water2"));
+		tmr.getBatch().end();
+		sb.end();
+		
+//		//draw box2d world
+//		b2dr.render(world, b2dCam.combined);
 		
 		// draw Coins
 		for(int i = 0; i < Coins.size; i++) {
@@ -255,7 +274,9 @@ public class Play extends GameState {
 					else if(cl.isInWater()){
 						System.out.println("Water!");
 						movement.y = speed * 1.2f;
+						player.changeRegion(0, 1 / 8);
 					}
+					MyContactListener.water = false;
 					break;
 					
 				case Keys.A:
@@ -327,6 +348,14 @@ public class Play extends GameState {
 		fdef.filter.maskBits = B2DVars.BIT_GROUND;
 		fdef.isSensor = true;
 		body.createFixture(fdef).setUserData("foot");
+		
+		// create foot sensor
+		shape.setAsBox(25 / B2DVars.PPM, 25 / B2DVars.PPM, new Vector2(0, 0.5f), 0);
+		fdef.shape = shape;
+		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND;
+		fdef.isSensor = true;
+		body.createFixture(fdef).setUserData("head");
 		
 		// create player
 		player = new Player(body);

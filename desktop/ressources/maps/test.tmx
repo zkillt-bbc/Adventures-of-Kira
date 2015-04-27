@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="80" height="18" tilewidth="69" tileheight="70" nextobjectid="268">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="80" height="18" tilewidth="69" tileheight="70" nextobjectid="278">
  <tileset firstgid="1" source="../../../Tiled/tilesets/Tiles.tsx"/>
  <tileset firstgid="157" source="../../../Tiled/tilesets/Backgrounds.tsx"/>
  <layer name="background" width="80" height="18">
@@ -12,22 +12,22 @@
    eJztlEsKwCAMRD1ujlRvW1wIIZiYGD+beTBQGgnDq7QUAAAAANyGXhfYBLFosxPUQ3tv0txUFkl/P/NISixW/ZHyfBvpzvLHPXr2WOf57tXOfMfMYeSbRnusRPbxnB/RZt9iZ75j1Mnql/WYcZdxLukzj0PtP5PtFHX5wp3n3n6DeeSO7+72qgeCIAiCnM4PuraCSw==
   </data>
  </layer>
- <layer name="Water2" width="80" height="18">
+ <layer name="Water2" width="80" height="18" opacity="0.7">
   <data encoding="base64" compression="zlib">
    eJzt0bEJACAMRNEM5F7uv4F9OknhCe/B9eGnCgBgbrdxZ7WlSv3vL/3S70un34x+AMALB6yJBNM=
   </data>
  </layer>
- <layer name="schraeg" width="80" height="18">
+ <layer name="schraeg" width="80" height="18" visible="0">
   <data encoding="base64" compression="zlib">
    eJzt0DENAAAIwDBe/BtGA+EgkFbBsggAAKAjtwMe8HDOQwDgggIjtwAc
   </data>
  </layer>
- <layer name="decoartion" width="80" height="18">
+ <layer name="decoartion" width="80" height="18" visible="0">
   <data encoding="base64" compression="zlib">
    eJztwTEBAAAAwqD1T20JT6AAAAAAAOBvFoAAAQ==
   </data>
  </layer>
- <objectgroup color="#a0a0a4" name="coins">
+ <objectgroup color="#a0a0a4" name="coins" visible="0">
   <object id="168" x="801.333" y="725.333">
    <ellipse/>
   </object>
@@ -163,6 +163,24 @@
    <ellipse/>
   </object>
   <object id="267" x="1105" y="768">
+   <ellipse/>
+  </object>
+  <object id="272" x="3725" y="489">
+   <ellipse/>
+  </object>
+  <object id="273" x="3796" y="489">
+   <ellipse/>
+  </object>
+  <object id="274" x="3863" y="490">
+   <ellipse/>
+  </object>
+  <object id="275" x="3865" y="560">
+   <ellipse/>
+  </object>
+  <object id="276" x="3793" y="559">
+   <ellipse/>
+  </object>
+  <object id="277" x="3726" y="558">
    <ellipse/>
   </object>
  </objectgroup>

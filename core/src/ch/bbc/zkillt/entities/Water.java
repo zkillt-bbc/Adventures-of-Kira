@@ -17,7 +17,7 @@ public class Water extends B2DSprite {
 		super(body);
 		
 		tex = Game.ressources.getTexture("wasser");
-		sprites = TextureRegion.split(tex, 22, 20)[x];
+		sprites = TextureRegion.split(tex, 1, 1)[x];
 		setAnimation(sprites, 1 / 12f);
 		System.out.println("Sprites: " + sprites.length);
 	}
