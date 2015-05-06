@@ -10,6 +10,8 @@ import ch.bbc.zkillt.states.Play;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -21,13 +23,16 @@ public class Game implements ApplicationListener {
 	public static final int SCALE = 1;
 	public static final float STEP = 1 / 60f;
 	private float accum;
-	public static int score;
-	public static String scoreName;
-	public static BitmapFont bmf;
-	
+	private static int score;
+	private static String scoreName;
+	private static BitmapFont bmf;
+	private int hp = Player.hp;
+	private int space = 0;
 	private SpriteBatch sb;
 	private OrthographicCamera cam;
 	private OrthographicCamera hudCam;
+	private Texture heart;
+	private Texture coin;
 	
 	private GameStateManager gsm;
 	
@@ -38,11 +43,15 @@ public class Game implements ApplicationListener {
 		Gdx.input.setInputProcessor(new MyInputProcessor());
 		
 		ressources = new Content();
-		ressources.loadTexture("ressources/images/player.png", "player");
+		ressources.loadTexture("ressources/images/player/player.png", "player");
 		ressources.loadTexture("ressources/images/coins3.png", "coin");
 		ressources.loadTexture("ressources/images/coins3.png", "wasser");
+		ressources.loadTexture("ressources/images/enemy/turtle_sheet.png", "turtle");
 
 		
+		this.heart = new Texture(Gdx.files.internal("ressources/images/heart.png"));
+		this.coin = new Texture(Gdx.files.internal("ressources/images/single_coin.png"));
+
 		this.sb = new SpriteBatch();
 		this.cam = new OrthographicCamera();
 		this.cam.setToOrtho(false, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -54,6 +63,7 @@ public class Game implements ApplicationListener {
 	    score = 0;
 	    scoreName = "score: " + score;
 	    bmf = new BitmapFont();
+	    bmf.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
 	}
 	
 	private void drawString(SpriteBatch sb, String s, float x, float y) {
@@ -62,7 +72,7 @@ public class Game implements ApplicationListener {
 			if(c == '/') c = 10;
 			else if(c >= '0' && c <= '9') c -= '0';
 			else continue;
-			bmf.draw(sb, "Coins: " + Player.getNumCoins(), cam.position.x -900, cam.position.y + 500);
+			bmf.draw(sb, "Coins: " + Player.getNumCoins(), cam.position.x - 30, cam.position.y + 500);
 		}
 	}
 	
@@ -77,11 +87,20 @@ public class Game implements ApplicationListener {
 			
 			
 			bmf.setScale(2);
+			
 			sb.begin();
+			sb.draw(coin, cam.position.x - 70, cam.position.y + 470, 30, 30);
 			drawString(sb, Player.getNumCoins() + " / 0", cam.position.x * 100, cam.position.y * 100);
+			
+				for(int hp = Player.hp; hp > 0; hp--) {
+					sb.draw(heart, cam.position.x + space - 910, cam.position.y + 480, 30, 30);
+					space += 40;
+				}
+				space = 0;
+			
 			sb.end();
 			
-			cam.position.set(Play.player.getPosition().x * 100 + 480, Play.player.getPosition().y * 100  - 100, 0);
+			cam.position.set(Play.getPlayer().getPosition().x * 100 + 480, Play.getPlayer().getPosition().y * 100  - 100, 0);
 			cam.update();
 			}
 		}
@@ -97,5 +116,105 @@ public class Game implements ApplicationListener {
 	public void resize(int w, int h) {}
 	public void pause() {}
 	public void resume() {}
+
+	public float getAccum() {
+		return accum;
+	}
+
+	public void setAccum(float accum) {
+		this.accum = accum;
+	}
+
+	public static int getScore() {
+		return score;
+	}
+
+	public static void setScore(int score) {
+		Game.score = score;
+	}
+
+	public static String getScoreName() {
+		return scoreName;
+	}
+
+	public static void setScoreName(String scoreName) {
+		Game.scoreName = scoreName;
+	}
+
+	public static BitmapFont getBmf() {
+		return bmf;
+	}
+
+	public static void setBmf(BitmapFont bmf) {
+		Game.bmf = bmf;
+	}
+
+	public int getHp() {
+		return hp;
+	}
+
+	public void setHp(int hp) {
+		this.hp = hp;
+	}
+
+	public int getSpace() {
+		return space;
+	}
+
+	public void setSpace(int space) {
+		this.space = space;
+	}
+
+	public SpriteBatch getSb() {
+		return sb;
+	}
+
+	public void setSb(SpriteBatch sb) {
+		this.sb = sb;
+	}
+
+	public OrthographicCamera getCam() {
+		return cam;
+	}
+
+	public void setCam(OrthographicCamera cam) {
+		this.cam = cam;
+	}
+
+	public OrthographicCamera getHudCam() {
+		return hudCam;
+	}
+
+	public void setHudCam(OrthographicCamera hudCam) {
+		this.hudCam = hudCam;
+	}
+
+	public Texture getHeart() {
+		return heart;
+	}
+
+	public void setHeart(Texture heart) {
+		this.heart = heart;
+	}
+
+	public GameStateManager getGsm() {
+		return gsm;
+	}
+
+	public void setGsm(GameStateManager gsm) {
+		this.gsm = gsm;
+	}
+
+	public static Content getRessources() {
+		return ressources;
+	}
+
+	public static void setRessources(Content ressources) {
+		Game.ressources = ressources;
+	}
+
+	public static float getStep() {
+		return STEP;
+	}
 	
 }

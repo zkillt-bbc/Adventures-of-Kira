@@ -13,6 +13,7 @@ public class Player extends B2DSprite {
 	public Texture tex;
 	public TextureRegion[] sprites;
 	private int x = 3;
+	public static int hp = 3;
 
 	public Player(Body body) {
 		

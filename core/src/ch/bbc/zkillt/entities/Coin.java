@@ -16,7 +16,6 @@ public class Coin extends B2DSprite {
 		TextureRegion[] sprites = TextureRegion.split(tex, 22, 20)[0];
 		
 		setAnimation(sprites, 1 / 20f);
-		
 	}
 	
 }

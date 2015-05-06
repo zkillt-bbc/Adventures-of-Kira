@@ -4,6 +4,7 @@ import box2dLight.RayHandler;
 import ch.bbc.zkillt.Game;
 import ch.bbc.zkillt.entities.Coin;
 import ch.bbc.zkillt.entities.Player;
+import ch.bbc.zkillt.entities.Turtle;
 import ch.bbc.zkillt.entities.Water;
 import ch.bbc.zkillt.handlers.B2DVars;
 import ch.bbc.zkillt.handlers.GameStateManager;
@@ -28,14 +29,13 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
 public class Play extends GameState {
-		
+	
 	private World world;
 	private Box2DDebugRenderer b2dr;
 	
@@ -46,10 +46,12 @@ public class Play extends GameState {
 	private float tileSize;
 	private OrthogonalTiledMapRenderer tmr;	
 	public static Player player;
-	private Array<Coin> Coins;
-	private Array<Water> Water;
+	public static Turtle turtle;
+	private Array<Coin> coinsArray;
+	private Array<Turtle> turtleArray;
+	private Array<Water> waterArray;
 	
-	public static Vector2 movement = new Vector2(1, 1);
+	public static Vector2 movement = new Vector2(0, 1);
 	private float speed = 6, gravity = 12, nitro = 0.6f;
 	private final float TIMESTEP = 1 / 60;
 	private final int VELOCITYITERATIONS = 8, POSITIONITERAIONS = 3;
@@ -58,9 +60,7 @@ public class Play extends GameState {
 	float y = cam.position.y - cam.viewportHeight * cam.zoom;
 	float width = cam.viewportWidth * Game.WINDOW_WIDTH;
 	float height = cam.viewportHeight * Game.WINDOW_HEIGHT;
-	
-	Contact contact;
-	
+	private boolean right = false;
 	float desiredVelocity;
  
 	
@@ -80,6 +80,7 @@ public class Play extends GameState {
 		
 //		new ConeLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.WHITE, 2220,cam.position.x - 600, cam.position.y + 600, -45, 45);
 //		new PointLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.YELLOW, 1200, cam.position.x, cam.position.y);
+		
 		// create player
 		createPlayer();
 		
@@ -87,11 +88,14 @@ public class Play extends GameState {
 		createTiles();
 		
 		// create Coins
-		createCoins();
+		createCoin();
 		
 		// create Water
 		createWater();
 		
+		// create Turtle
+		createTurtle();
+
 		// set up box2d cam
 		b2dCam = new OrthographicCamera();
 		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM, Game.WINDOW_HEIGHT / B2DVars.PPM);		
@@ -99,17 +103,18 @@ public class Play extends GameState {
 	
 	public void update(float dt) {
 		
+		System.out.println("Turtles to Remove: " + cl.getBodiesToRemove2().size);
 		
 		if (cl.isInWater()) {
-			gravity = 6;
+			gravity = 3;
 		} else {
 			gravity = 12;
 		}
 		
 		
-		System.out.println("Gravity: " + gravity);
+//		System.out.println("Gravity: " + gravity);
 		
-		tmr.setView(cam.combined, x, y, width, height);
+		tmr.setView(cam.combined, x * 2, y, width, height);
 		
 		desiredVelocity = Math.min(movement.x, player.getBody().getLinearVelocity().x + nitro);
 		
@@ -124,29 +129,60 @@ public class Play extends GameState {
 		// check input
 		handleInput();
 		
-		// set player speed
+		// set player speed 
 		player.getBody().setLinearVelocity(desiredVelocity, movement.y);
-		
+
 		// update box2d
 		world.step(dt, 6, 2);
+		player.update(dt);
+
 		
 		// remove Coins
 		Array<Body> bodies = cl.getBodiesToRemove();
 		for(int i = 0; i < bodies.size; i++) {
 			Body b = bodies.get(i);
-			Coins.removeValue((Coin) b.getUserData(), true);
+			coinsArray.removeValue((Coin) b.getUserData(), true);
 			world.destroyBody(b);
 			player.collectCoin();
-			Game.score++;
 		}
 		
-		bodies.clear();
+		bodies.clear();		
 		
-		player.update(dt);
+		// remove Coins
+		Array<Body> bodies2 = cl.getBodiesToRemove2();
+		for(int i = 0; i < bodies2.size; i++) {
+			Body b = bodies2.get(i);
+			turtleArray.removeValue((Turtle) b.getUserData(), true);
+			world.destroyBody(b);
+			System.out.println("Turtle-Body Destroyed");
+		}
 		
-		for(int i = 0; i < Coins.size; i++) {
-			Coins.get(i).update(dt);
-		}		
+		bodies2.clear();
+				
+				
+		for (Turtle t : turtleArray) {
+			if (t.getBody().getPosition().x  == t.getOldX()) {
+				if(right) {
+					t.getBody().setLinearVelocity(2.0f, 0);
+					t.changeRegion(1, 1 / 12);
+					right = false;
+				}
+				else if (!right) {
+					t.getBody().setLinearVelocity(-2.0f, 0);
+					t.changeRegion(0, 1 / 12);
+					right = true;
+				}
+			}
+			t.setOldX(t.getBody().getPosition().x);
+		}
+		
+		for(int i = 0; i < coinsArray.size; i++) {
+			coinsArray.get(i).update(dt);
+		}	
+		
+		for(int i = 0; i < turtleArray.size; i++) {
+			turtleArray.get(i).update(dt);
+		}
 	}
 	
 	public void render() {
@@ -165,8 +201,14 @@ public class Play extends GameState {
 		tmr.getBatch().end();
 		sb.end();
 		
+		// draw Turtle
+		for(int i = 0; i < turtleArray.size; i++) {
+				turtleArray.get(i).render(sb);	
+		}
+		
 		// draw player
 		player.render(sb);
+		
 		sb.setProjectionMatrix(cam.combined);
 		
 		sb.begin();
@@ -175,18 +217,15 @@ public class Play extends GameState {
 		tmr.getBatch().end();
 		sb.end();
 		
-//		//draw box2d world
-//		b2dr.render(world, b2dCam.combined);
+		//draw box2d world
+		b2dr.render(world, b2dCam.combined);
 		
 		// draw Coins
-		for(int i = 0; i < Coins.size; i++) {
-			Coins.get(i).render(sb);		
+		for(int i = 0; i < coinsArray.size; i++) {
+			coinsArray.get(i).render(sb);		
 		}
 		
-		// draw Coins
-		for(int i = 0; i < Water.size; i++) {
-			Water.get(i).render(sb);		
-		}
+		
 //		rayHandler.updateAndRender();
 		
 		world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERAIONS);
@@ -234,20 +273,16 @@ public class Play extends GameState {
 					player.changeRegion(2, 10000);
 					// Sprite für Stehenbleiben ändern
 					movement.x = 0;
-					System.out.println("Links losgelassen pos: " + player.getPosition().x);
 					break;
 				case Keys.D:
 					player.changeRegion(3, 10000); // Sprite für Stehenbleiben ändern (1/12f) = delay für Animationen
 					movement.x = 0;
-					System.out.println("Rechts losgelassen pos: " + player.getPosition().x);
 					break;
 				case Keys.SHIFT_LEFT: 
 					if(Gdx.input.isKeyPressed(Keys.A)) {
 						movement.x = -speed;
-						System.out.println("Links mit Shift losgelassen: " + movement.x );
 					} else if (Gdx.input.isKeyPressed(Keys.D)) {
 						movement.x = speed;
-						System.out.println("Rechts mit Shift losegalssen: : " + movement.x );
 					}
 					break;				
 				}
@@ -268,13 +303,12 @@ public class Play extends GameState {
 						movement.y = speed * 1.2f;
 						if(cl.isInWater()){
 							System.out.println("Ground + Water!");
-							movement.y = speed * 1.2f;
+							movement.y = speed / 2;
 						}
 					}
 					else if(cl.isInWater()){
 						System.out.println("Water!");
-						movement.y = speed * 1.2f;
-						player.changeRegion(0, 1 / 8);
+						movement.y = speed / 2;
 					}
 					MyContactListener.water = false;
 					break;
@@ -282,38 +316,26 @@ public class Play extends GameState {
 				case Keys.A:
 					if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
 						movement.x = -speed;
-						System.out.println("A +Shift" + player.getPosition().x);
-						System.out.println("A mit Shift: " + movement.x );
 					}
 					player.changeRegion(2, 1/12f);
 					movement.x = -speed;
-					System.out.println("Links: " + movement);
-					System.out.println("Links pos: " + player.getPosition().x);
 					break;
 					
 				case Keys.D:					
 					if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
 						movement.x = speed;
-						System.out.println("D + Shift" + player.getPosition().x);
-						System.out.println("D mit Shift: " + movement.x );
 					}
 					player.changeRegion(3, 1/12f);
 					movement.x = speed;
-					System.out.println("Rechts: " + movement);
-					System.out.println("Rechts pos: " + player.getPosition().x);
 					break;
 					
 				case Keys.SHIFT_LEFT:
 					if(Gdx.input.isKeyPressed(Keys.A)) {
 						player.changeRegion(2, 1 / 18f);
 						movement.x = -speed * 1.6f;
-						System.out.println("Shift + Links" + player.getPosition().x);
-						System.out.println("Links mit Shift: " + movement.x );
 					} else if (Gdx.input.isKeyPressed(Keys.D)) {
 						player.changeRegion(3, 1 / 18f);
 						movement.x = speed * 1.6f;
-						System.out.println("Shift + Rechts: " + player.getPosition().x);
-						System.out.println("Rechts mit Shift: " + movement.x );
 					}
 					break;
 				}
@@ -335,26 +357,26 @@ public class Play extends GameState {
 		bdef.type = BodyType.DynamicBody;
 		Body body = world.createBody(bdef);
 
-		shape.setAsBox(44 / B2DVars.PPM, 96 / B2DVars.PPM);
+		shape.setAsBox(27 / B2DVars.PPM, 50 / B2DVars.PPM);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
-		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN | B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN | B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY;
 		body.createFixture(fdef).setUserData("player");
 		
 		// create foot sensor
-		shape.setAsBox(13 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -97 / B2DVars.PPM), 0);
+		shape.setAsBox(35 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -50 / B2DVars.PPM), 0);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
-		fdef.filter.maskBits = B2DVars.BIT_GROUND;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN | B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY;
 		fdef.isSensor = true;
 		body.createFixture(fdef).setUserData("foot");
 		
-		// create foot sensor
-		shape.setAsBox(25 / B2DVars.PPM, 25 / B2DVars.PPM, new Vector2(0, 0.5f), 0);
+		// create head sensor
+		shape.setAsBox(18 / B2DVars.PPM, 18 / B2DVars.PPM, new Vector2(0, 68 / B2DVars.PPM), 0);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
-		fdef.filter.maskBits = B2DVars.BIT_GROUND;
-		fdef.isSensor = true;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN | B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY;
+		fdef.isSensor = false;
 		body.createFixture(fdef).setUserData("head");
 		
 		// create player
@@ -371,13 +393,13 @@ public class Play extends GameState {
 		TiledMapTileLayer layer;
 		
 		layer = (TiledMapTileLayer) tileMap.getLayers().get("ground");
-		createLayer(layer, B2DVars.BIT_GROUND);
+		createLayer(layer, false, B2DVars.BIT_GROUND);
 		
 		layer = (TiledMapTileLayer) tileMap.getLayers().get("schraeg");
-		createLayerSchraeg(layer, B2DVars.BIT_SCHRAEG);
+		createLayerSchraeg(layer, false, B2DVars.BIT_SCHRAEG);
 	}
 	
-	private void createLayer(TiledMapTileLayer layer, short bits) {
+	private void createLayer(TiledMapTileLayer layer, boolean filter, short bits) {
 		
 		BodyDef bdef = new BodyDef();
 		FixtureDef fdef = new FixtureDef();
@@ -418,14 +440,14 @@ public class Play extends GameState {
 				fdef.friction = 0;
 				fdef.shape = cs;
 				fdef.filter.categoryBits = bits;
-				fdef.filter.maskBits = B2DVars.BIT_PLAYER;
-				fdef.isSensor = false;
+				fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_ENEMY;;
+				fdef.isSensor = filter;
 				world.createBody(bdef).createFixture(fdef);
 			}
 		}
 	}	
 	
-	private void createLayerSchraeg(TiledMapTileLayer layer, short bits) {
+	private void createLayerSchraeg(TiledMapTileLayer layer, boolean filter, short bits) {
 		
 		BodyDef bdef = new BodyDef();
 		FixtureDef fdef = new FixtureDef();
@@ -467,16 +489,63 @@ public class Play extends GameState {
 				fdef.friction = 0;
 				fdef.shape = cs;
 				fdef.filter.categoryBits = bits;
-				fdef.filter.maskBits = B2DVars.BIT_PLAYER;
-				fdef.isSensor = false;
+				fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_ENEMY;
+				fdef.isSensor = filter;
 				world.createBody(bdef).createFixture(fdef);		
 			}
 		}
 	}
 	
-	private void createCoins() {
+	private void createTurtle() {
 		
-		Coins = new Array<Coin>();
+		turtleArray = new Array<Turtle>();
+		
+		MapLayer layer = tileMap.getLayers().get("turtles");
+		
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+		PolygonShape shape = new PolygonShape();
+		
+		for(MapObject mo : layer.getObjects()) {
+			
+			bdef.type = BodyType.DynamicBody;
+			
+			float x = (float) mo.getProperties().get("x", Float.class) / B2DVars.PPM;
+			float y = (float) mo.getProperties().get("y", Float.class) / B2DVars.PPM;
+			
+			// create enemy
+			bdef.position.set(x, y);
+			Body body = world.createBody(bdef);
+			body.setLinearVelocity(2.0f, 0);
+
+			shape.setAsBox(22 / B2DVars.PPM, 40 / B2DVars.PPM);
+			fdef.shape = shape;
+			fdef.filter.categoryBits = B2DVars.BIT_ENEMY;
+			fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_PLAYER| B2DVars.BIT_SCHRAEG;
+			fdef.isSensor = false;
+			body.createFixture(fdef).setUserData("turtle");
+			
+			
+			// create Head sensor
+			shape.setAsBox(26 / B2DVars.PPM, 5 / B2DVars.PPM, new Vector2(0, 40 / B2DVars.PPM), 0);
+			fdef.shape = shape;
+			fdef.filter.categoryBits = B2DVars.BIT_ENEMY;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_GROUND | B2DVars.BIT_SCHRAEG;
+			fdef.isSensor = false;
+			body.createFixture(fdef).setUserData("turtleHead");
+			
+			turtle = new Turtle(body);
+			turtleArray.add(turtle);
+			
+			// create player
+			turtle = new Turtle(body);
+			body.setUserData(turtle);
+		}
+	}
+	
+	private void createCoin() {
+		
+		coinsArray = new Array<Coin>();
 		
 		MapLayer layer = tileMap.getLayers().get("coins");
 		
@@ -503,7 +572,7 @@ public class Play extends GameState {
 			body.createFixture(fdef).setUserData("coin");
 			
 			Coin c = new Coin(body);
-			Coins.add(c);
+			coinsArray.add(c);
 			
 			body.setUserData(c);
 		}
@@ -511,7 +580,7 @@ public class Play extends GameState {
 	
 	private void createWater() {
 		
-		Water = new Array<Water>();
+		waterArray = new Array<Water>();
 		
 		MapLayer layer = tileMap.getLayers().get("Water");
 		
@@ -538,7 +607,7 @@ public class Play extends GameState {
 			body.createFixture(fdef).setUserData("water");
 			
 			Water w = new Water(body);
-			Water.add(w);
+			waterArray.add(w);
 			
 			body.setUserData(w);
 			System.out.println(body.getUserData().toString());
@@ -601,19 +670,19 @@ public class Play extends GameState {
 		this.tmr = tmr;
 	}
 
-	public Player getPlayer() {
+	public static Player getPlayer() {
 		return player;
 	}
 
-	public void setPlayer(Player player) {
+	public static void setPlayer(Player player) {
 		Play.player = player;
 	}
 
 	public Array<Coin> getCoins() {
-		return Coins;
+		return coinsArray;
 	}
 
 	public void setCoins(Array<Coin> coins) {
-		Coins = coins;
+		coinsArray = coins;
 	}
 }

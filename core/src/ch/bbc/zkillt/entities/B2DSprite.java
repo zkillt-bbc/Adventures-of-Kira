@@ -2,7 +2,6 @@ package ch.bbc.zkillt.entities;
 
 import ch.bbc.zkillt.handlers.Animation;
 import ch.bbc.zkillt.handlers.B2DVars;
-import ch.bbc.zkillt.states.Play;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,7 +14,6 @@ public class B2DSprite extends TextureRegion {
 	protected Animation animation;
 	protected float width;
 	protected float height;
-	protected Play play;
 
 
 	
@@ -37,11 +35,16 @@ public class B2DSprite extends TextureRegion {
 	public void render(SpriteBatch sb) {
 		sb.begin();
 	if(body.getUserData().toString().contains("Player") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 50, body.getPosition().y *B2DVars.PPM - 105, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
-	} else if (body.getUserData().toString().contains("Coin") == true) {
+		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 50, body.getPosition().y *B2DVars.PPM - 65, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
+	}
+	else if (body.getUserData().toString().contains("Coin") == true) {
 		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
-	} else if (body.getUserData().toString().contains("Water") == true) {
+	} 
+	else if (body.getUserData().toString().contains("Water") == true) {
 		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
+	}
+	else if (body.getUserData().toString().contains("Turtle") == true) {
+		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
 	} else {
 		System.out.println("Fehler");
 	}
