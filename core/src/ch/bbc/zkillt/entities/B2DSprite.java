@@ -46,7 +46,7 @@ public class B2DSprite extends TextureRegion {
 	else if (body.getUserData().toString().contains("Turtle") == true) {
 		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
 	} else {
-		System.out.println("Fehler");
+		System.out.println("Fehler: Zu renderndes Objekt wurde nicht gefunden!");
 	}
 	sb.end();
 

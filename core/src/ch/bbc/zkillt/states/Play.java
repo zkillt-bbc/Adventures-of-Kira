@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -36,33 +37,53 @@ import com.badlogic.gdx.utils.Array;
 
 public class Play extends GameState {
 	
-	private World world;
+	//---------- Debugging ---------------------//
+
 	private Box2DDebugRenderer b2dr;
 	
-	private OrthographicCamera b2dCam;
+	//---------- Listener properties -----------//
+
 	public static MyContactListener cl;
 	
-	private TiledMap tileMap;
-	private float tileSize;
-	private OrthogonalTiledMapRenderer tmr;	
+	//---------- Class Instances ---------------//
+
 	public static Player player;
 	public static Turtle turtle;
 	private Array<Coin> coinsArray;
 	private Array<Turtle> turtleArray;
 	private Array<Water> waterArray;
 	
+	//---------- World properties --------------//
+	
+	private OrthogonalTiledMapRenderer tmr;	
+	private World world;
 	public static Vector2 movement = new Vector2(0, 1);
 	private float speed = 6, gravity = 12, nitro = 0.6f;
 	private final float TIMESTEP = 1 / 60;
 	private final int VELOCITYITERATIONS = 8, POSITIONITERAIONS = 3;
+		private boolean right = false;
+	private float desiredVelocity;
 	
+	//---------- Camera Positioning ------------//
+	
+	private OrthographicCamera b2dCam;
 	float x = cam.position.x - cam.viewportWidth * cam.zoom;
 	float y = cam.position.y - cam.viewportHeight * cam.zoom;
 	float width = cam.viewportWidth * Game.WINDOW_WIDTH;
 	float height = cam.viewportHeight * Game.WINDOW_HEIGHT;
-	private boolean right = false;
-	float desiredVelocity;
- 
+
+	//---------- Tilemap properties ------------//
+	
+	private TiledMap tileMap;
+	private float tileSize;
+	
+	private MapProperties prop;
+	private int mapWidth;
+	private int mapHeight;
+	private int tilePixelWidth;
+	private int tilePixelHeight;
+	private int mapPixelWidth;
+	private int mapPixelHeight;
 	
 	private RayHandler rayHandler;
 	
@@ -102,16 +123,22 @@ public class Play extends GameState {
 	}
 	
 	public void update(float dt) {
+
+		//--------- Player states -----------//
 		
-		System.out.println("Turtles to Remove: " + cl.getBodiesToRemove2().size);
-		
+		// in water
 		if (cl.isInWater()) {
 			gravity = 3;
 		} else {
-			gravity = 12;
+			gravity = 12f;
 		}
 		
-		
+		if(cl.isEnemyCollision()) {
+			movement.y = speed / 1.25f;
+			cl.setEnemyCollision(false);
+		}
+
+
 //		System.out.println("Gravity: " + gravity);
 		
 		tmr.setView(cam.combined, x * 2, y, width, height);
@@ -152,9 +179,9 @@ public class Play extends GameState {
 		Array<Body> bodies2 = cl.getBodiesToRemove2();
 		for(int i = 0; i < bodies2.size; i++) {
 			Body b = bodies2.get(i);
-			turtleArray.removeValue((Turtle) b.getUserData(), true);
+			turtleArray.removeValue((Turtle) b.getUserData(), false);
 			world.destroyBody(b);
-			System.out.println("Turtle-Body Destroyed");
+			Player.numTurtles++;
 		}
 		
 		bodies2.clear();
@@ -196,8 +223,10 @@ public class Play extends GameState {
 		sb.begin();
 		tmr.getBatch().begin();
 		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("background"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("bg_deko"));
 		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("ground"));
 		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("schraeg"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get("decoration"));
 		tmr.getBatch().end();
 		sb.end();
 		
@@ -217,8 +246,8 @@ public class Play extends GameState {
 		tmr.getBatch().end();
 		sb.end();
 		
-		//draw box2d world
-		b2dr.render(world, b2dCam.combined);
+//		//draw box2d world
+//		b2dr.render(world, b2dCam.combined);
 		
 		// draw Coins
 		for(int i = 0; i < coinsArray.size; i++) {
@@ -302,15 +331,13 @@ public class Play extends GameState {
 					if(cl.isPlayerOnGround()){
 						movement.y = speed * 1.2f;
 						if(cl.isInWater()){
-							System.out.println("Ground + Water!");
 							movement.y = speed / 2;
 						}
 					}
 					else if(cl.isInWater()){
-						System.out.println("Water!");
 						movement.y = speed / 2;
 					}
-					MyContactListener.water = false;
+					cl.setWater(false);
 					break;
 					
 				case Keys.A:
@@ -364,7 +391,7 @@ public class Play extends GameState {
 		body.createFixture(fdef).setUserData("player");
 		
 		// create foot sensor
-		shape.setAsBox(35 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -50 / B2DVars.PPM), 0);
+		shape.setAsBox(30 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -50 / B2DVars.PPM), 0);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
 		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN | B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY;
@@ -372,7 +399,7 @@ public class Play extends GameState {
 		body.createFixture(fdef).setUserData("foot");
 		
 		// create head sensor
-		shape.setAsBox(18 / B2DVars.PPM, 18 / B2DVars.PPM, new Vector2(0, 68 / B2DVars.PPM), 0);
+		shape.setAsBox(18 / B2DVars.PPM, 50 / B2DVars.PPM, new Vector2(0, 68 / B2DVars.PPM), 0);
 		fdef.shape = shape;
 		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
 		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN | B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY;
@@ -397,6 +424,14 @@ public class Play extends GameState {
 		
 		layer = (TiledMapTileLayer) tileMap.getLayers().get("schraeg");
 		createLayerSchraeg(layer, false, B2DVars.BIT_SCHRAEG);
+		
+		prop = tileMap.getProperties();
+		mapWidth = prop.get("width", Integer.class);
+		mapHeight = prop.get("height", Integer.class);
+		tilePixelWidth = prop.get("tilewidth", Integer.class);
+		tilePixelHeight = prop.get("tileheight", Integer.class);
+		mapPixelWidth = mapWidth * tilePixelWidth;
+		mapPixelHeight = mapHeight * tilePixelHeight;
 	}
 	
 	private void createLayer(TiledMapTileLayer layer, boolean filter, short bits) {
@@ -423,19 +458,18 @@ public class Play extends GameState {
 				);
 				
 				ChainShape cs = new ChainShape();
-				Vector2[] v = new Vector2[3];
-				// Ecke unten Links
-				v[0] = new Vector2(
-					-tileSize / 2 / B2DVars.PPM, -tileSize / 2 / B2DVars.PPM);
-				// Ecke unten Rechts
-				v[1] = new Vector2(
-					-tileSize / 2 / B2DVars.PPM, tileSize / 2 / B2DVars.PPM);
+				Vector2[] v = new Vector2[5];
+				// von unten links nach oben links
+				v[0] = new Vector2(-tileSize / 2 / B2DVars.PPM, -tileSize / 2 / B2DVars.PPM);
+				// Von oben links nach oben rechts
+				v[1] = new Vector2(-tileSize / 2 / B2DVars.PPM, tileSize / 2 / B2DVars.PPM);
 				// Ecke oben Links
-				v[2] = new Vector2(
-					tileSize / 2 / B2DVars.PPM, (tileSize / 2 / B2DVars.PPM));
-//				// Ecke oben Rechts
-//				v[3] = new Vector2(
-//						(tileSize / 2 / B2DVars.PPM) / 2, (-tileSize / 2 / B2DVars.PPM) / 2);
+				v[2] = new Vector2(tileSize / 2 / B2DVars.PPM, tileSize / 2 / B2DVars.PPM);
+				// Ecke oben Rechts
+				v[3] = new Vector2(tileSize / 2 / B2DVars.PPM, -tileSize / 2 / B2DVars.PPM);
+				// von unten links nach oben links
+				v[4] = new Vector2(-tileSize / 2 / B2DVars.PPM, -tileSize / 2 / B2DVars.PPM);
+				
 				cs.createChain(v);
 				fdef.friction = 0;
 				fdef.shape = cs;
@@ -499,7 +533,6 @@ public class Play extends GameState {
 	private void createTurtle() {
 		
 		turtleArray = new Array<Turtle>();
-		
 		MapLayer layer = tileMap.getLayers().get("turtles");
 		
 		BodyDef bdef = new BodyDef();
@@ -518,29 +551,30 @@ public class Play extends GameState {
 			Body body = world.createBody(bdef);
 			body.setLinearVelocity(2.0f, 0);
 
-			shape.setAsBox(22 / B2DVars.PPM, 40 / B2DVars.PPM);
+			shape.setAsBox(22 / B2DVars.PPM, 5 / B2DVars.PPM, new Vector2(0, 60 / B2DVars.PPM), 0);
 			fdef.shape = shape;
 			fdef.filter.categoryBits = B2DVars.BIT_ENEMY;
-			fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_PLAYER| B2DVars.BIT_SCHRAEG;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_GROUND | B2DVars.BIT_SCHRAEG;
 			fdef.isSensor = false;
+			
 			body.createFixture(fdef).setUserData("turtle");
 			
-			
 			// create Head sensor
-			shape.setAsBox(26 / B2DVars.PPM, 5 / B2DVars.PPM, new Vector2(0, 40 / B2DVars.PPM), 0);
+			shape.setAsBox(22 / B2DVars.PPM, 40 / B2DVars.PPM, new Vector2(0, 15 / B2DVars.PPM), 0);
 			fdef.shape = shape;
 			fdef.filter.categoryBits = B2DVars.BIT_ENEMY;
 			fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_GROUND | B2DVars.BIT_SCHRAEG;
 			fdef.isSensor = false;
 			body.createFixture(fdef).setUserData("turtleHead");
 			
-			turtle = new Turtle(body);
-			turtleArray.add(turtle);
 			
 			// create player
 			turtle = new Turtle(body);
+			turtleArray.add(turtle);
 			body.setUserData(turtle);
 		}
+		Player.totalTurtles = turtleArray.size;
+
 	}
 	
 	private void createCoin() {
@@ -610,7 +644,6 @@ public class Play extends GameState {
 			waterArray.add(w);
 			
 			body.setUserData(w);
-			System.out.println(body.getUserData().toString());
 		}
 	}
 
@@ -684,5 +717,193 @@ public class Play extends GameState {
 
 	public void setCoins(Array<Coin> coins) {
 		coinsArray = coins;
+	}
+
+	public static Turtle getTurtle() {
+		return turtle;
+	}
+
+	public static void setTurtle(Turtle turtle) {
+		Play.turtle = turtle;
+	}
+
+	public Array<Coin> getCoinsArray() {
+		return coinsArray;
+	}
+
+	public void setCoinsArray(Array<Coin> coinsArray) {
+		this.coinsArray = coinsArray;
+	}
+
+	public Array<Turtle> getTurtleArray() {
+		return turtleArray;
+	}
+
+	public void setTurtleArray(Array<Turtle> turtleArray) {
+		this.turtleArray = turtleArray;
+	}
+
+	public Array<Water> getWaterArray() {
+		return waterArray;
+	}
+
+	public void setWaterArray(Array<Water> waterArray) {
+		this.waterArray = waterArray;
+	}
+
+	public static Vector2 getMovement() {
+		return movement;
+	}
+
+	public static void setMovement(Vector2 movement) {
+		Play.movement = movement;
+	}
+
+	public float getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(float speed) {
+		this.speed = speed;
+	}
+
+	public float getGravity() {
+		return gravity;
+	}
+
+	public void setGravity(float gravity) {
+		this.gravity = gravity;
+	}
+
+	public float getNitro() {
+		return nitro;
+	}
+
+	public void setNitro(float nitro) {
+		this.nitro = nitro;
+	}
+
+	public boolean isRight() {
+		return right;
+	}
+
+	public void setRight(boolean right) {
+		this.right = right;
+	}
+
+	public float getDesiredVelocity() {
+		return desiredVelocity;
+	}
+
+	public void setDesiredVelocity(float desiredVelocity) {
+		this.desiredVelocity = desiredVelocity;
+	}
+
+	public float getX() {
+		return x;
+	}
+
+	public void setX(float x) {
+		this.x = x;
+	}
+
+	public float getY() {
+		return y;
+	}
+
+	public void setY(float y) {
+		this.y = y;
+	}
+
+	public float getWidth() {
+		return width;
+	}
+
+	public void setWidth(float width) {
+		this.width = width;
+	}
+
+	public float getHeight() {
+		return height;
+	}
+
+	public void setHeight(float height) {
+		this.height = height;
+	}
+
+	public MapProperties getProp() {
+		return prop;
+	}
+
+	public void setProp(MapProperties prop) {
+		this.prop = prop;
+	}
+
+	public int getMapWidth() {
+		return mapWidth;
+	}
+
+	public void setMapWidth(int mapWidth) {
+		this.mapWidth = mapWidth;
+	}
+
+	public int getMapHeight() {
+		return mapHeight;
+	}
+
+	public void setMapHeight(int mapHeight) {
+		this.mapHeight = mapHeight;
+	}
+
+	public int getTilePixelWidth() {
+		return tilePixelWidth;
+	}
+
+	public void setTilePixelWidth(int tilePixelWidth) {
+		this.tilePixelWidth = tilePixelWidth;
+	}
+
+	public int getTilePixelHeight() {
+		return tilePixelHeight;
+	}
+
+	public void setTilePixelHeight(int tilePixelHeight) {
+		this.tilePixelHeight = tilePixelHeight;
+	}
+
+	public int getMapPixelWidth() {
+		return mapPixelWidth;
+	}
+
+	public void setMapPixelWidth(int mapPixelWidth) {
+		this.mapPixelWidth = mapPixelWidth;
+	}
+
+	public int getMapPixelHeight() {
+		return mapPixelHeight;
+	}
+
+	public void setMapPixelHeight(int mapPixelHeight) {
+		this.mapPixelHeight = mapPixelHeight;
+	}
+
+	public RayHandler getRayHandler() {
+		return rayHandler;
+	}
+
+	public void setRayHandler(RayHandler rayHandler) {
+		this.rayHandler = rayHandler;
+	}
+
+	public float getTIMESTEP() {
+		return TIMESTEP;
+	}
+
+	public int getVELOCITYITERATIONS() {
+		return VELOCITYITERATIONS;
+	}
+
+	public int getPOSITIONITERAIONS() {
+		return POSITIONITERAIONS;
 	}
 }

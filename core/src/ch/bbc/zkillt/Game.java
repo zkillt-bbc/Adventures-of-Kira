@@ -11,7 +11,6 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -26,13 +25,12 @@ public class Game implements ApplicationListener {
 	private static int score;
 	private static String scoreName;
 	private static BitmapFont bmf;
-	private int hp = Player.hp;
 	private int space = 0;
 	private SpriteBatch sb;
 	private OrthographicCamera cam;
 	private OrthographicCamera hudCam;
-	private Texture heart;
-	private Texture coin;
+	private Texture heart, coin, gameover, turtleHead;
+	Play play;
 	
 	private GameStateManager gsm;
 	
@@ -51,6 +49,8 @@ public class Game implements ApplicationListener {
 		
 		this.heart = new Texture(Gdx.files.internal("ressources/images/heart.png"));
 		this.coin = new Texture(Gdx.files.internal("ressources/images/single_coin.png"));
+		this.gameover = new Texture(Gdx.files.internal("ressources/images/gameover.png"));
+		this.turtleHead = new Texture(Gdx.files.internal("ressources/images/enemy/turtle_head.png"));
 
 		this.sb = new SpriteBatch();
 		this.cam = new OrthographicCamera();
@@ -63,17 +63,6 @@ public class Game implements ApplicationListener {
 	    score = 0;
 	    scoreName = "score: " + score;
 	    bmf = new BitmapFont();
-	    bmf.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
-	}
-	
-	private void drawString(SpriteBatch sb, String s, float x, float y) {
-		for(int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			if(c == '/') c = 10;
-			else if(c >= '0' && c <= '9') c -= '0';
-			else continue;
-			bmf.draw(sb, "Coins: " + Player.getNumCoins(), cam.position.x - 30, cam.position.y + 500);
-		}
 	}
 	
 	public void render() {
@@ -89,21 +78,37 @@ public class Game implements ApplicationListener {
 			bmf.setScale(2);
 			
 			sb.begin();
-			sb.draw(coin, cam.position.x - 70, cam.position.y + 470, 30, 30);
-			drawString(sb, Player.getNumCoins() + " / 0", cam.position.x * 100, cam.position.y * 100);
+			sb.draw(coin, cam.position.x - 140, cam.position.y + 470, 30, 30);
+			sb.draw(turtleHead, cam.position.x + 20, cam.position.y + 470, 30, 30);
+			drawString(sb, "x  " + Player.getNumCoins(), cam.position.x - 100, cam.position.y + 500);
+			drawString(sb, " " + Player.numTurtles + " / " + Player.totalTurtles, cam.position.x + 55, cam.position.y + 500);
 			
+			if(Player.hp > 0) {
 				for(int hp = Player.hp; hp > 0; hp--) {
 					sb.draw(heart, cam.position.x + space - 910, cam.position.y + 480, 30, 30);
 					space += 40;
 				}
-				space = 0;
+			} else {
+				sb.draw(gameover, cam.position.x - 850, cam.position.y - 150, 1754, 385);
+			}
 			
+			space = 0;
 			sb.end();
 			
-			cam.position.set(Play.getPlayer().getPosition().x * 100 + 480, Play.getPlayer().getPosition().y * 100  - 100, 0);
+			cam.position.set(Play.getPlayer().getPosition().x * 100 + 480, Play.getPlayer().getPosition().y * 100 + 100, 0);
 			cam.update();
 			}
 		}
+	
+	private void drawString(SpriteBatch sb, String s, float x, float y) {
+		for(int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if(c == '/') c = 10;
+			else if(c >= '0' && c <= '9') c -= '0';
+			else continue;
+			bmf.draw(sb, s, x, y);
+		}
+	}
 	
 	public void dispose() {
 		
@@ -147,14 +152,6 @@ public class Game implements ApplicationListener {
 
 	public static void setBmf(BitmapFont bmf) {
 		Game.bmf = bmf;
-	}
-
-	public int getHp() {
-		return hp;
-	}
-
-	public void setHp(int hp) {
-		this.hp = hp;
 	}
 
 	public int getSpace() {

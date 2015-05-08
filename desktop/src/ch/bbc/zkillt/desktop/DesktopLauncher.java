@@ -10,9 +10,9 @@ public class DesktopLauncher {
 		
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 
-		cfg.width = Game.WINDOW_WIDTH * Game.SCALE;
-		cfg.height = Game.WINDOW_HEIGHT * Game.SCALE;
-		cfg.fullscreen = false;
+		cfg.width = Game.WINDOW_WIDTH;
+		cfg.height = Game.WINDOW_HEIGHT;
+		cfg.fullscreen = true; 
      
 		new LwjglApplication(new Game(), cfg);
 	}

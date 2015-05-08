@@ -16,8 +16,9 @@ public class MyContactListener implements ContactListener {
 	private int numEnemyFootContacts;
 	private Array<Body> bodiesToRemove;
 	private Array<Body> bodiesToRemove2;
-	public static boolean water;
-	Player player;
+	private boolean water;
+	private boolean enemyCollision = false;
+	private Player player;
 //	private int counter = 0;
 
 	public MyContactListener() {
@@ -50,10 +51,14 @@ public class MyContactListener implements ContactListener {
 		if (fb.getUserData() != null && fb.getUserData().equals("coin")) {
 			bodiesToRemove.add(fb.getBody());
 		}
-		if (fb.getUserData() != null && fb.getUserData().equals("turtleHead") && fa.getUserData() != null && fa.getUserData().equals("foot")) {
+		if (fb.getUserData() != null && fb.getUserData().equals("turtle") && fa.getUserData() != null && fa.getUserData().equals("foot")) {
 			bodiesToRemove2.add(fb.getBody());
-			System.out.println("TURTLE HEAD + PLAYER FOOT");
+			this.enemyCollision = true;
 		}
+		if (fb.getUserData() != null && fb.getUserData().equals("turtleHead") && fa.getUserData() != null && fa.getUserData().equals("foot")) {
+			System.out.println("DAMAGE!!!!");
+			Player.hp -= 1;
+		}		
 		if (fa.getUserData() != null && fa.getUserData().equals("water")) {
 			water = true;
 		}
@@ -102,6 +107,54 @@ public class MyContactListener implements ContactListener {
 	}
 
 	public void postSolve(Contact c, ContactImpulse ci) {
+	}
+
+	public int getNumFootContacts() {
+		return numFootContacts;
+	}
+
+	public void setNumFootContacts(int numFootContacts) {
+		this.numFootContacts = numFootContacts;
+	}
+
+	public int getNumEnemyFootContacts() {
+		return numEnemyFootContacts;
+	}
+
+	public void setNumEnemyFootContacts(int numEnemyFootContacts) {
+		this.numEnemyFootContacts = numEnemyFootContacts;
+	}
+
+	public boolean isWater() {
+		return water;
+	}
+
+	public void setWater(boolean water) {
+		this.water = water;
+	}
+
+	public boolean isEnemyCollision() {
+		return enemyCollision;
+	}
+
+	public void setEnemyCollision(boolean enemyCollision) {
+		this.enemyCollision = enemyCollision;
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
+	}
+
+	public void setBodiesToRemove(Array<Body> bodiesToRemove) {
+		this.bodiesToRemove = bodiesToRemove;
+	}
+
+	public void setBodiesToRemove2(Array<Body> bodiesToRemove2) {
+		this.bodiesToRemove2 = bodiesToRemove2;
 	}
 
 }
