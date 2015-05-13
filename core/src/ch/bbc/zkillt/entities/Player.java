@@ -10,8 +10,8 @@ public class Player extends B2DSprite {
 	
 	public static int numCoins;
 	public static int totalCoins;
-	public static int numTurtles;
-	public static int totalTurtles;
+	public int numTurtles;
+	public int totalTurtles;
 	public Texture tex;
 	public TextureRegion[] sprites;
 	private int x = 3;

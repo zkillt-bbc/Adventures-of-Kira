@@ -58,7 +58,10 @@ public class MyContactListener implements ContactListener {
 		if (fb.getUserData() != null && fb.getUserData().equals("turtleHead") && fa.getUserData() != null && fa.getUserData().equals("foot")) {
 			System.out.println("DAMAGE!!!!");
 			Player.hp -= 1;
-		}		
+		}
+		if (fb.getUserData() != null && fb.getUserData().equals("finish") && fa.getUserData() != null && fa.getUserData().equals("foot")) {
+			System.out.println("FINISH!!!!");
+		}	
 		if (fa.getUserData() != null && fa.getUserData().equals("water")) {
 			water = true;
 		}

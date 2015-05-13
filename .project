@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>KiraSource</name>
+	<name>KiraSource003</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -17,7 +17,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1428579758652</id>
+			<id>1431092652389</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -30,10 +30,6 @@
 					<matcher>
 						<id>org.eclipse.ui.ide.multiFilter</id>
 						<arguments>1.0-projectRelativePath-equals-true-false-desktop</arguments>
-					</matcher>
-					<matcher>
-						<id>org.eclipse.ui.ide.multiFilter</id>
-						<arguments>1.0-projectRelativePath-equals-true-false-html</arguments>
 					</matcher>
 				</arguments>
 			</matcher>

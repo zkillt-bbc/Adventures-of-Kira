@@ -5,6 +5,7 @@ import ch.bbc.zkillt.handlers.Content;
 import ch.bbc.zkillt.handlers.GameStateManager;
 import ch.bbc.zkillt.handlers.MyInput;
 import ch.bbc.zkillt.handlers.MyInputProcessor;
+import ch.bbc.zkillt.handlers.WorldLoader;
 import ch.bbc.zkillt.states.Play;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -81,7 +82,7 @@ public class Game implements ApplicationListener {
 			sb.draw(coin, cam.position.x - 140, cam.position.y + 470, 30, 30);
 			sb.draw(turtleHead, cam.position.x + 20, cam.position.y + 470, 30, 30);
 			drawString(sb, "x  " + Player.getNumCoins(), cam.position.x - 100, cam.position.y + 500);
-			drawString(sb, " " + Player.numTurtles + " / " + Player.totalTurtles, cam.position.x + 55, cam.position.y + 500);
+			drawString(sb, " " + WorldLoader.player.numTurtles + " / " + WorldLoader.player.totalTurtles, cam.position.x + 55, cam.position.y + 500);
 			
 			if(Player.hp > 0) {
 				for(int hp = Player.hp; hp > 0; hp--) {
@@ -95,7 +96,7 @@ public class Game implements ApplicationListener {
 			space = 0;
 			sb.end();
 			
-			cam.position.set(Play.getPlayer().getPosition().x * 100 + 480, Play.getPlayer().getPosition().y * 100 + 100, 0);
+			cam.position.set(WorldLoader.getPlayer().getPosition().x * 100 + 480, WorldLoader.getPlayer().getPosition().y * 100 + 100, 0);
 			cam.update();
 			}
 		}

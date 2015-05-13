@@ -89,16 +89,18 @@ public class CollisionWorking {
 		bodies.clear();		
 	}
 	
-	private Shape getRectangle(RectangleMapObject rectangleObject) {
-		Rectangle rectangle = rectangleObject.getRectangle();
-		PolygonShape polygon = new PolygonShape();
-		Vector2 size = new Vector2((rectangle.x + rectangle.width * 0.5f) * B2DVars.PPM, (rectangle.y + rectangle.height * 0.5f) * B2DVars.PPM);
-		polygon.setAsBox(rectangle.width * 0.5f * B2DVars.PPM, rectangle.height * 0.5f * B2DVars.PPM, size, 0.0f);
-		
-		return polygon;
-	}
+    public static Shape getRectangle(RectangleMapObject rectangleObject)
+    {
+        System.out.println("Loading rectangle from map file");
+
+        Rectangle rectangle = rectangleObject.getRectangle();
+        PolygonShape polygon = new PolygonShape();
+        Vector2 size = new Vector2((rectangle.x + rectangle.width * 0.5f) / 1000, (rectangle.y + rectangle.height * 0.5f ) / 1000);
+        polygon.setAsBox(rectangle.width * 0.5f / B2DVars.PPM, rectangle.height * 0.5f / B2DVars.PPM, size, 0.0f);
+        return polygon;
+    }
 	
-	private Shape getCircle(CircleMapObject circleObject) {
+	public static Shape getCircle(CircleMapObject circleObject) {
 		Circle circle = circleObject.getCircle();
 		CircleShape circleShape = new CircleShape();
 		circleShape.setRadius(circle.radius * B2DVars.PPM);
@@ -107,7 +109,7 @@ public class CollisionWorking {
 		return circleShape;
 	}
 	
-	private Shape getPolygon(PolygonMapObject polygonObject) {
+	public static Shape getPolygon(PolygonMapObject polygonObject) {
 		PolygonShape polygon = new PolygonShape();
 		float[] vertex = polygonObject.getPolygon().getTransformedVertices();
 		float[] worldVertex = new float[vertex.length];
@@ -120,7 +122,7 @@ public class CollisionWorking {
 		return polygon;
 	}
 	
-	private Shape getPolyLine(PolylineMapObject polyLineObject) {
+	public static Shape getPolyLine(PolylineMapObject polyLineObject) {
 		float[] vertex = polyLineObject.getPolyline().getTransformedVertices();
 		Vector2[] worldVertex = new Vector2[vertex.length / 2];
 		

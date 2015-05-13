@@ -12,6 +12,7 @@ public class B2DVars {
 	public static final short BIT_WATER = 16;		// 0000 0000 0001 0000
 	public static final short BIT_BACKGROUND = 32; 	// 0000 0000 0010 0000
 	public static final short BIT_COIN = 64; 		// 0000 0000 0100 0000
-	public static final short BIT_ENEMY = 128; 		// 0000 0000 1000 0000
+	public static final short BIT_FINISH = 128; 		// 0000 0000 1000 0000
+	public static final short BIT_ENEMY = 256; 		// 0000 0001 0000 0000
 
 }

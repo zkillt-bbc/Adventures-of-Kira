@@ -41,7 +41,7 @@ public class B2DSprite extends TextureRegion {
 		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
 	} 
 	else if (body.getUserData().toString().contains("Water") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
+		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM, body.getPosition().y *B2DVars.PPM , animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
 	}
 	else if (body.getUserData().toString().contains("Turtle") == true) {
 		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
