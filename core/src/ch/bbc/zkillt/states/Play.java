@@ -1,73 +1,97 @@
 package ch.bbc.zkillt.states;
 
+import box2dLight.ConeLight;
 import box2dLight.RayHandler;
 import ch.bbc.zkillt.Game;
 import ch.bbc.zkillt.entities.Coin;
 import ch.bbc.zkillt.entities.Player;
+import ch.bbc.zkillt.entities.PowerupBlock;
 import ch.bbc.zkillt.entities.Turtle;
 import ch.bbc.zkillt.entities.Water;
 import ch.bbc.zkillt.handlers.B2DVars;
 import ch.bbc.zkillt.handlers.GameStateManager;
+import ch.bbc.zkillt.handlers.MusicPlayer;
 import ch.bbc.zkillt.handlers.MyContactListener;
-import ch.bbc.zkillt.handlers.WorldLoader;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.ChainShape;
+import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
+
+
+
 public class Play extends GameState {
-	
-	//---------- Debugging ---------------------//
+
+	// ---------- Debugging ---------------------//
 
 	private Box2DDebugRenderer b2dr;
+
+	// ---------- Player States -----------------//
 	
-	//---------- Listener properties -----------//
+	private boolean dead = false;
+	
+	// ---------- Listener properties -----------//
+	
 
 	public static MyContactListener cl;
-	
-	//---------- Class Instances ---------------//
 
+	// ---------- Class Instances ---------------//
+	
+	public static MusicPlayer mp;
 	public static Player player;
 	public static Turtle turtle;
 	private Array<Coin> coinsArray;
 	private Array<Turtle> turtleArray;
 	private Array<Water> waterArray;
-	
-	//---------- World properties --------------//
-		
-	private OrthogonalTiledMapRenderer tmr;	
-	private static World world;
-	public static Vector2 movement = new Vector2(0, 1);
-	private float speed = 6, gravity = 12, nitro = 0.6f;
+	private Array<PowerupBlock> powerupArray;
+
+
+	// ---------- World properties --------------//
+
+	private OrthogonalTiledMapRenderer tmr;
+	private World world;
+	public static Vector2 movement = new Vector2(0, 0);
+	private float speed = 6, gravity, nitro = 0.6f;
 	private final float TIMESTEP = 1 / 60;
 	private final int VELOCITYITERATIONS = 8, POSITIONITERAIONS = 3;
-		private boolean right = false;
+	private boolean right = false;
 	private float desiredVelocity;
-	
-	//---------- Camera Positioning ------------//
-	
+
+	// ---------- Camera Positioning ------------//
+
 	private OrthographicCamera b2dCam;
 	float x = cam.position.x - cam.viewportWidth * cam.zoom;
 	float y = cam.position.y - cam.viewportHeight * cam.zoom;
 	float width = cam.viewportWidth * Game.WINDOW_WIDTH;
 	float height = cam.viewportHeight * Game.WINDOW_HEIGHT;
 
-	//---------- Tilemap properties ------------//
-	
+	// ---------- Tilemap properties ------------//
+
+	private String mapPath;
 	private TiledMap tileMap;
 	private float tileSize;
-	
+
 	private MapProperties prop;
 	private int mapWidth;
 	private int mapHeight;
@@ -75,102 +99,183 @@ public class Play extends GameState {
 	private int tilePixelHeight;
 	private int mapPixelWidth;
 	private int mapPixelHeight;
-	
-	private RayHandler rayHandler;
-	
-	public Play(GameStateManager gsm) {
-		
-		super(gsm);
-		
-		// set up box2d stuff
-		b2dr = new Box2DDebugRenderer();
-		new WorldLoader(gsm);
 
+	private RayHandler rayHandler;
+
+	/**
+	 * The Constructor.
+	 *
+	 * @author Tim Killenberger
+	 * 
+	 * Instantiates a new play.
+	 * @param gsm the GameStateManager
+	 * @param mapPath the map path
+	 * @param gravity the gravity
+	 */
+	public Play(GameStateManager gsm, String mapPath, float gravity) {
+
+		super(gsm);
+
+		
+		new MusicPlayer(MusicPlayer.bgMusic, 0.3f, 1.3f, 1000);
+		this.mapPath = mapPath;
+		this.gravity = gravity;
+		// set up box2d stuff
+		world = new World(new Vector2(0, -9.81f), true);
+		cl = new MyContactListener();
+		world.setContactListener(cl);
+		b2dr = new Box2DDebugRenderer();
 		rayHandler = new RayHandler(world, 50, 50);
 		rayHandler.setCombinedMatrix(cam.combined);
+
+		 new ConeLight(rayHandler, 500,
+		 com.badlogic.gdx.graphics.Color.WHITE, 1920, cam.position.x - 200,
+		 cam.position.y + 600, -90, 45);
+		// new PointLight(rayHandler, 5000,
+		// com.badlogic.gdx.graphics.Color.YELLOW, 1200, cam.position.x,
+		// cam.position.y);
+
+		// create player
+		createPlayer();
+
+		// create tiles
+		createTiles();
+
+		// create Coins
+		createCoin();
+
+		// create Water
+		createWater();
+
+		// create Turtle
+		createTurtle();
 		
-//		new ConeLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.WHITE, 2220,cam.position.x - 600, cam.position.y + 600, -45, 45);
-//		new PointLight(rayHandler, 5000, com.badlogic.gdx.graphics.Color.YELLOW, 1200, cam.position.x, cam.position.y);
-		
-		
+		// create Powerup
+		createPowerupBlock();
+
 		// set up box2d cam
 		b2dCam = new OrthographicCamera();
-		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM, Game.WINDOW_HEIGHT / B2DVars.PPM);		
+		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM,
+				Game.WINDOW_HEIGHT / B2DVars.PPM);
 	}
-	
+
+	/**
+	 * Updates the Game
+	 * 
+	 * @author Tim Killenberger
+	 * @param dt the Delta Time
+	 */
 	public void update(float dt) {
-
-		//--------- Player states -----------//
-				
+		
+		// --------- Player states -----------//
+		
+		
+		
+		 if(Player.hp > 0 && player.getPosition().y > 0) {
+			 player.setOldX(player.getPosition().x);
+		 }
+		
+		 
+		 if (!cl.isPlayerOnGround()) {
+			 gravity = gravity * 1.03f;
+			 System.out.println("Gravity: " + gravity);
+			 System.out.println("On Ground:" + cl.isPlayerOnGround());
+		 } else {
+			 gravity = 12;
+		 }
+		 
+		 
 		// in water
-		if (WorldLoader.getCl().isInWater()) {
+		if (cl.isInWater()) {
 			gravity = 3;
-		} else {
-			gravity = 12f;
 		}
 		
-		if(WorldLoader.getCl().isEnemyCollision()) {
+		if (cl.isEnemyCollision()) {
 			movement.y = speed / 1.25f;
-			WorldLoader.getCl().setEnemyCollision(false);
+			cl.setEnemyCollision(false);
 		}
 
+		if(Player.hp > 0 && player.getPosition().y >  2){
+			if (player.getPosition().x > 8 && player.getPosition().x < (getMapPixelWidth() - 1400) / B2DVars.PPM) {
+				cam.position.set(Play.getPlayer().getPosition().x * 100 + Game.WINDOW_WIDTH / 10, Play.getPlayer().getPosition().y * 100 + Game.WINDOW_HEIGHT / 10, 0);
+			} else if (player.getPosition().x < 8) {
+				cam.position.set(Game.WINDOW_HEIGHT / 1.1f, Play.getPlayer().getPosition().y * 100 + Game.WINDOW_HEIGHT / 10, 0);
+			} else if (player.getPosition().x > ((getMapPixelWidth()) - Game.WINDOW_WIDTH / 1.3f) / B2DVars.PPM) {
+				cam.position.set((getMapPixelWidth()) - Game.WINDOW_WIDTH / 1.6f, player.getPosition().y * 100 + Game.WINDOW_HEIGHT / 10, 0);
+			} else {
+				System.out.println("NOTHING AT ALL!");
+			}
+		} else {
+			cam.position.set((float) (player.getOldX() * 100 + Game.WINDOW_WIDTH / 10), 5 + Game.WINDOW_HEIGHT / 1.5f, 0);
+			Player.hp = 0;
+			gravity = 0;
+			dead = true;
+			movement.x = 0;
+			movement.y = speed / 1.5f;
+		}
 
-//		System.out.println("Gravity: " + gravity);
-		
-		WorldLoader.tmr.setView(cam.combined, x * 2, y, width, height);
-		
-		desiredVelocity = Math.min(movement.x, WorldLoader.player.getBody().getLinearVelocity().x + nitro);		
-		
-		//apply gravity 
+				
+		cam.update();
+
+		// System.out.println("Gravity: " + gravity);
+
+		tmr.setView(cam.combined, x * 2, y, width, height);
+
+		desiredVelocity = Math.min(movement.x, player.getBody().getLinearVelocity().x + nitro);
+
+		// apply gravity
 		movement.y -= gravity * dt;
-		
-		if(movement.y > speed)
+
+		if (movement.y > speed)
 			movement.y = speed;
-		else if(movement.y < -speed)
-			movement.y = -speed;		
-		
+		else if (movement.y < -speed)
+			movement.y = -speed;
+
+		System.out.println("Dead: " + dead);
+
+		if(!dead) {
 		// check input
 		handleInput();
-		
-		// set player speed 
-		WorldLoader.player.getBody().setLinearVelocity(desiredVelocity, movement.y);
+		}
+
+		// set player speed
+		player.getBody().setLinearVelocity(desiredVelocity, movement.y);
 
 		// update box2d
-		WorldLoader.world.step(dt, 6, 2);
-		WorldLoader.player.update(dt);
+		world.step(dt, 6, 2);
+		player.update(dt);
 
-		
 		// remove Coins
-		Array<Body> bodies = WorldLoader.getCl().getBodiesToRemove();
-		for(int i = 0; i < bodies.size; i++) {
+		Array<Body> bodies = cl.getBodiesToRemove();
+		for (int i = 0; i < bodies.size; i++) {
 			Body b = bodies.get(i);
-			WorldLoader.getCoinsArray().removeValue((Coin) b.getUserData(), true);
-			WorldLoader.world.destroyBody(b);
-			WorldLoader.player.collectCoin();
+			coinsArray.removeValue((Coin) b.getUserData(), true);
+			world.destroyBody(b);
+			player.collectCoin();
+			new MusicPlayer(MusicPlayer.coin, 0.4f, 1, 0.3f);
 		}
-		
-		bodies.clear();		
-		
-		// remove Coins
-		Array<Body> bodies2 = WorldLoader.getCl().getBodiesToRemove2();
-		for(int i = 0; i < bodies2.size; i++) {
+
+		bodies.clear();
+
+		// remove Turtle
+		Array<Body> bodies2 = cl.getBodiesToRemove2();
+		for (int i = 0; i < bodies2.size; i++) {
 			Body b = bodies2.get(i);
-			WorldLoader.getTurtleArray().removeValue((Turtle) b.getUserData(), false);
-			WorldLoader.world.destroyBody(b);
-			WorldLoader.player.numTurtles++;
+			turtleArray.removeValue((Turtle) b.getUserData(), false);
+			world.destroyBody(b);
+			player.numTurtles++;
+			new MusicPlayer(MusicPlayer.jumpOnEnemy, 0.3f, 1, 0.3f);
 		}
-		
+
 		bodies2.clear();
-				
-				
-		for (Turtle t : WorldLoader.getTurtleArray()) {
-			if (t.getBody().getPosition().x  == t.getOldX()) {
-				if(right) {
+
+		for (Turtle t : turtleArray) {
+			if (t.getBody().getPosition().x == t.getOldX()) {
+				if (right) {
 					t.getBody().setLinearVelocity(2.0f, 0);
 					t.changeRegion(1, 1 / 12);
 					right = false;
-				}
-				else if (!right) {
+				} else if (!right) {
 					t.getBody().setLinearVelocity(-2.0f, 0);
 					t.changeRegion(0, 1 / 12);
 					right = true;
@@ -178,166 +283,199 @@ public class Play extends GameState {
 			}
 			t.setOldX(t.getBody().getPosition().x);
 		}
-		
-		for(int i = 0; i < WorldLoader.getCoinsArray().size; i++) {
-			WorldLoader.getCoinsArray().get(i).update(dt);
+
+		for (int i = 0; i < coinsArray.size; i++) {
+			coinsArray.get(i).update(dt);
+		}
+
+		for (int i = 0; i < turtleArray.size; i++) {
+			turtleArray.get(i).update(dt);
 		}
 		
-		for(int i = 0; i < WorldLoader.getTurtleArray().size; i++) {
-			WorldLoader.getTurtleArray().get(i).update(dt);
+		for (int i = 0; i < powerupArray.size; i++) {
+			powerupArray.get(i).update(dt);
 		}
 	}
-	
+
+	/**
+	 * renders the game-graphics and objects
+	 * 
+	 * @author Tim Killenberger
+	 */
 	public void render() {
-		
-		
+				
 		// clear screen
 		Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		b2dCam.position.set(cam.position.x , cam.position.y, 0);
-		
+		b2dCam.position.set(cam.position.x, cam.position.y, 0);
+
 		sb.begin();
-		WorldLoader.tmr.getBatch().begin();
-		WorldLoader.tmr.renderTileLayer((TiledMapTileLayer) WorldLoader.tileMap.getLayers().get("background"));
-		WorldLoader.tmr.renderTileLayer((TiledMapTileLayer) WorldLoader.tileMap.getLayers().get("bg_deko"));
-		WorldLoader.tmr.renderTileLayer((TiledMapTileLayer) WorldLoader.tileMap.getLayers().get("ground"));
-		WorldLoader.tmr.renderTileLayer((TiledMapTileLayer) WorldLoader.tileMap.getLayers().get("schraeg"));
-		WorldLoader.tmr.renderTileLayer((TiledMapTileLayer) WorldLoader.tileMap.getLayers().get("decoration"));
-		WorldLoader.tmr.getBatch().end();
+		tmr.getBatch().begin();
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get(
+				"background"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get(
+				"bg_deko"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get(
+				"ground"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get(
+				"schraeg"));
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get(
+				"decoration"));
+		tmr.getBatch().end();
 		sb.end();
-		
-		// draw Turtle
-		for(int i = 0; i < WorldLoader.getTurtleArray().size; i++) {
-				WorldLoader.getTurtleArray().get(i).render(sb);	
-		}
-		
+
 		// draw Coins
-		for(int i = 0; i < WorldLoader.coinsArray.size; i++) {
-			WorldLoader.coinsArray.get(i).render(sb);		
+		for (int i = 0; i < coinsArray.size; i++) {
+			coinsArray.get(i).render(sb);
 		}
+		
+		// draw PowerUpBlock
+		for (int i = 0; i < powerupArray.size; i++) {
+			powerupArray.get(i).render(sb);
+		}
+
+		// draw Turtle
+		for (int i = 0; i < turtleArray.size; i++) {
+			turtleArray.get(i).render(sb);
+		}
+		
 		
 		// draw player
-		WorldLoader.player.render(sb);
+		if(player != null) {
+		player.render(sb);
+		} else {
+			System.out.println("Player destroyed");
+		}
 		
 		sb.setProjectionMatrix(cam.combined);
-		
+
 		sb.begin();
-		WorldLoader.tmr.getBatch().begin();
-		WorldLoader.tmr.renderTileLayer((TiledMapTileLayer) WorldLoader.tileMap.getLayers().get("Water2"));
-		WorldLoader.tmr.getBatch().end();
+		tmr.getBatch().begin();
+		tmr.renderTileLayer((TiledMapTileLayer) tileMap.getLayers().get(
+				"Water2"));
+		tmr.getBatch().end();
 		sb.end();
+
+		 //draw box2d world
+		 b2dr.render(world, b2dCam.combined);
 		
-		//draw box2d world
-		b2dr.render(WorldLoader.world, b2dCam.combined);
+		if(Player.hp == 0) {
+		 rayHandler.updateAndRender();
+		}
 		
-		
-//		rayHandler.updateAndRender();
-		
-		WorldLoader.world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERAIONS);
+		world.step(TIMESTEP, VELOCITYITERATIONS, POSITIONITERAIONS);
 
 	}
-	
-	
+
+	/**
+	 * Handles keyboard - input
+	 *  
+	 * @author Tim Killenberger
+	 */
 	public void handleInput() {
 		Gdx.input.setInputProcessor(new InputProcessor() {
-			
+	
 			@Override
-			public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-				// TODO Auto-generated method stub
+			public boolean touchUp(int screenX, int screenY, int pointer,
+					int button) {
+
 				return false;
 			}
-			
+
 			@Override
 			public boolean touchDragged(int screenX, int screenY, int pointer) {
-				// TODO Auto-generated method stub
+
 				return false;
 			}
-			
+
 			@Override
-			public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-				// TODO Auto-generated method stub
+			public boolean touchDown(int screenX, int screenY, int pointer,
+					int button) {
+
 				return false;
 			}
-			
+
 			@Override
 			public boolean scrolled(int amount) {
-				// TODO Auto-generated method stub
+
 				return false;
 			}
-			
+
 			@Override
 			public boolean mouseMoved(int screenX, int screenY) {
-				// TODO Auto-generated method stub
+
 				return false;
 			}
-				
+
 			@Override
 			public boolean keyUp(int keycode) {
-				switch(keycode) {
+				switch (keycode) {
 				case Keys.A:
-					WorldLoader.player.changeRegion(2, 10000);
+					player.changeRegion(2, 32, 64,10000);
 					// Sprite für Stehenbleiben ändern
 					movement.x = 0;
 					break;
 				case Keys.D:
-					WorldLoader.player.changeRegion(3, 10000); // Sprite für Stehenbleiben ändern (1/12f) = delay für Animationen
+					player.changeRegion(3, 32, 64 ,10000); // Sprite für Stehenbleiben
+													// ändern (1/12f) = delay
+													// für Animationen
 					movement.x = 0;
 					break;
-				case Keys.SHIFT_LEFT: 
-					if(Gdx.input.isKeyPressed(Keys.A)) {
+				case Keys.SHIFT_LEFT:
+					if (Gdx.input.isKeyPressed(Keys.A)) {
 						movement.x = -speed;
 					} else if (Gdx.input.isKeyPressed(Keys.D)) {
 						movement.x = speed;
 					}
-					break;				
+					break;
 				}
 				return true;
 			}
-			
+
 			@Override
 			public boolean keyTyped(char character) {
-				// TODO Auto-generated method stub
+
 				return false;
 			}
-			
+
 			@Override
 			public boolean keyDown(int keycode) {
-				switch(keycode) {
+				switch (keycode) {
 				case Keys.SPACE:
-					if(WorldLoader.getCl().isPlayerOnGround()){
+					if (cl.isPlayerOnGround()) {
+						new MusicPlayer(MusicPlayer.playerJump, 0.2f, 1, 0.3f);
 						movement.y = speed * 1.2f;
-						if(WorldLoader.getCl().isInWater()){
+						if (cl.isInWater()) {
 							movement.y = speed / 2;
 						}
-					}
-					else if(WorldLoader.getCl().isInWater()){
+					} else if (cl.isInWater()) {
 						movement.y = speed / 2;
 					}
-					WorldLoader.getCl().setWater(false);
+					cl.setWater(false);
 					break;
-					
+
 				case Keys.A:
-					if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+					if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
 						movement.x = -speed;
 					}
-					WorldLoader.player.changeRegion(2, 1/12f);
+					player.changeRegion(2, 32, 64,1 / 12f);
 					movement.x = -speed;
 					break;
-					
-				case Keys.D:					
-					if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+
+				case Keys.D:
+					if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
 						movement.x = speed;
 					}
-					WorldLoader.player.changeRegion(3, 1/12f);
+					player.changeRegion(3, 32, 64,1 / 12f);
 					movement.x = speed;
 					break;
-					
+
 				case Keys.SHIFT_LEFT:
-					if(Gdx.input.isKeyPressed(Keys.A)) {
-						WorldLoader.player.changeRegion(2, 1 / 18f);
+					if (Gdx.input.isKeyPressed(Keys.A)) {
+						player.changeRegion(2, 32, 64,1 / 18f);
 						movement.x = -speed * 1.6f;
 					} else if (Gdx.input.isKeyPressed(Keys.D)) {
-						WorldLoader.player.changeRegion(3, 1 / 18f);
+						player.changeRegion(3, 32, 64,1 / 18f);
 						movement.x = speed * 1.6f;
 					}
 					break;
@@ -346,15 +484,394 @@ public class Play extends GameState {
 			}
 		});
 	}
-	
-	public void dispose() {}
 
-	public static World getWorld() {
+
+	public void dispose() {
+	}
+
+	/**
+	 * Creates the player.
+	 *
+	 * @author Tim Killenberger
+	 */
+	private void createPlayer() {
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+		PolygonShape shape = new PolygonShape();
+
+		// create player
+		bdef.position.set(500 / B2DVars.PPM, 1000 / B2DVars.PPM);
+		bdef.type = BodyType.DynamicBody;
+		Body body = world.createBody(bdef);
+
+		shape.setAsBox(27 / B2DVars.PPM, 50 / B2DVars.PPM);
+		fdef.shape = shape;
+		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN
+				| B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY | B2DVars.BIT_POWERUP;
+		body.createFixture(fdef).setUserData("player");
+
+		// create foot sensor
+		shape.setAsBox(30 / B2DVars.PPM, 2 / B2DVars.PPM, new Vector2(0, -50
+				/ B2DVars.PPM), 0);
+		fdef.shape = shape;
+		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN
+				| B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY;
+		fdef.isSensor = true;
+		body.createFixture(fdef).setUserData("foot");
+
+		// create head sensor
+		shape.setAsBox(18 / B2DVars.PPM, 50 / B2DVars.PPM, new Vector2(0,
+				68 / B2DVars.PPM), 0);
+		fdef.shape = shape;
+		fdef.filter.categoryBits = B2DVars.BIT_PLAYER;
+		fdef.filter.maskBits = B2DVars.BIT_GROUND | B2DVars.BIT_COIN
+				| B2DVars.BIT_SCHRAEG | B2DVars.BIT_WATER | B2DVars.BIT_ENEMY | B2DVars.BIT_POWERUP;
+		fdef.isSensor = false;
+		body.createFixture(fdef).setUserData("head");
+
+		// create player
+		player = new Player(body);
+		body.setUserData(player);
+	}
+
+	/**
+	 * Creates the Tiles.
+	 *
+	 * @author Tim Killenberger
+	 */
+	private void createTiles() {
+
+		// load tile map
+		tileMap = new TmxMapLoader().load(mapPath);
+		tmr = new OrthogonalTiledMapRenderer(tileMap);
+		tileSize = tileMap.getProperties().get("tilewidth", Integer.class);
+		TiledMapTileLayer layer;
+
+		layer = (TiledMapTileLayer) tileMap.getLayers().get("ground");
+		createLayer(layer, false, B2DVars.BIT_GROUND);
+
+		layer = (TiledMapTileLayer) tileMap.getLayers().get("schraeg");
+		createLayerSchraeg(layer, false, B2DVars.BIT_SCHRAEG);
+
+		prop = tileMap.getProperties();
+		mapWidth = prop.get("width", Integer.class);
+		mapHeight = prop.get("height", Integer.class);
+		tilePixelWidth = prop.get("tilewidth", Integer.class);
+		tilePixelHeight = prop.get("tileheight", Integer.class);
+		mapPixelWidth = mapWidth * tilePixelWidth;
+		mapPixelHeight = mapHeight * tilePixelHeight;
+	}
+
+	/**
+	 * Creates the layer.
+	 *
+	 * @param layer the layer
+	 * @param filter the filter
+	 * @param bits the bits
+	 */
+	private void createLayer(TiledMapTileLayer layer, boolean filter, short bits) {
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+
+		// go through all the cells in the layer
+		for (int row = 0; row < layer.getHeight(); row++) {
+			for (int col = 0; col < layer.getWidth(); col++) {
+
+				// get cell
+				Cell cell = layer.getCell(col, row);
+
+				// check if cell exists
+				if (cell == null)
+					continue;
+				if (cell.getTile() == null)
+					continue;
+
+				// create a body + fixture from cell
+				bdef.type = BodyType.StaticBody;
+				bdef.position.set((col + 0.5f) * tileSize / B2DVars.PPM,
+						(row + 0.5f) * tileSize / B2DVars.PPM);
+
+				ChainShape cs = new ChainShape();
+				Vector2[] v = new Vector2[5];
+				// von unten links nach oben links
+				v[0] = new Vector2(-tileSize / 2 / B2DVars.PPM, -tileSize / 2
+						/ B2DVars.PPM);
+				// Von oben links nach oben rechts
+				v[1] = new Vector2(-tileSize / 2 / B2DVars.PPM, tileSize / 2
+						/ B2DVars.PPM);
+				// Ecke oben Links
+				v[2] = new Vector2(tileSize / 2 / B2DVars.PPM, tileSize / 2
+						/ B2DVars.PPM);
+				// Ecke oben Rechts
+				v[3] = new Vector2(tileSize / 2 / B2DVars.PPM, -tileSize / 2
+						/ B2DVars.PPM);
+				// von unten links nach oben links
+				v[4] = new Vector2(-tileSize / 2 / B2DVars.PPM, -tileSize / 2
+						/ B2DVars.PPM);
+
+				cs.createChain(v);
+				fdef.friction = 0;
+				fdef.shape = cs;
+				fdef.filter.categoryBits = bits;
+				fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_ENEMY;
+				;
+				fdef.isSensor = filter;
+				world.createBody(bdef).createFixture(fdef);
+			}
+		}
+	}
+
+	/**
+	 * Creates the layer schraeg.
+	 *
+	 * @param layer the Layername
+	 * @param filter the filter boolean
+	 * @param bits the CollisionBits
+	 */
+	private void createLayerSchraeg(TiledMapTileLayer layer, boolean filter,
+			short bits) {
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+
+		// go through all the cells in the layer
+		for (int row = 0; row < layer.getHeight(); row++) {
+			for (int col = 0; col < layer.getWidth(); col++) {
+
+				// get cell
+				Cell cell = layer.getCell(col, row);
+
+				// check if cell exists
+				if (cell == null)
+					continue;
+				if (cell.getTile() == null)
+					continue;
+
+				// create a body + fixture from cell
+
+				bdef.type = BodyType.StaticBody;
+				bdef.position.set((col + 0.5f) * tileSize / B2DVars.PPM,
+						(row + 0.5f) * tileSize / B2DVars.PPM);
+
+				ChainShape cs = new ChainShape();
+				Vector2[] v = new Vector2[3];
+				// Ecke unten Links
+				v[0] = new Vector2(-tileSize / 2 / B2DVars.PPM, -tileSize / 2
+						/ B2DVars.PPM);
+				// Ecke unten Rechts
+				v[1] = new Vector2(-tileSize / 2 / B2DVars.PPM, tileSize / 2
+						/ B2DVars.PPM);
+				// Ecke oben Links
+				v[2] = new Vector2(tileSize / 2 / B2DVars.PPM, tileSize / 2
+						/ B2DVars.PPM / 2 - 0.52f);
+				// // Ecke oben Rechts
+				// v[3] = new Vector2(
+				// (tileSize / 2 / B2DVars.PPM) / 2, (-tileSize / 2 /
+				// B2DVars.PPM) / 2);
+				cs.createChain(v);
+				fdef.friction = 0;
+				fdef.shape = cs;
+				fdef.filter.categoryBits = bits;
+				fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_ENEMY;
+				fdef.isSensor = filter;
+				world.createBody(bdef).createFixture(fdef);
+			}
+		}
+	}
+
+	/**
+	 * Creates the turtle.
+	 *
+	 * @author Tim Killenberger
+	 */
+	private void createTurtle() {
+
+		turtleArray = new Array<Turtle>();
+		MapLayer layer = tileMap.getLayers().get("turtles");
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+		PolygonShape shape = new PolygonShape();
+
+		for (MapObject mo : layer.getObjects()) {
+
+			bdef.type = BodyType.DynamicBody;
+
+			float x = (float) mo.getProperties().get("x", Float.class)
+					/ B2DVars.PPM;
+			float y = (float) mo.getProperties().get("y", Float.class)
+					/ B2DVars.PPM;
+
+			// create enemy
+			bdef.position.set(x, y);
+			Body body = world.createBody(bdef);
+			body.setLinearVelocity(2.0f, 0);
+
+			shape.setAsBox(22 / B2DVars.PPM, 5 / B2DVars.PPM, new Vector2(0,
+					60 / B2DVars.PPM), 0);
+			fdef.shape = shape;
+			fdef.filter.categoryBits = B2DVars.BIT_ENEMY;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_GROUND
+					| B2DVars.BIT_SCHRAEG;
+			fdef.isSensor = false;
+
+			body.createFixture(fdef).setUserData("turtle");
+
+			// create Head sensor
+			shape.setAsBox(22 / B2DVars.PPM, 40 / B2DVars.PPM, new Vector2(0,
+					15 / B2DVars.PPM), 0);
+			fdef.shape = shape;
+			fdef.filter.categoryBits = B2DVars.BIT_ENEMY;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER | B2DVars.BIT_GROUND
+					| B2DVars.BIT_SCHRAEG;
+			fdef.isSensor = false;
+			body.createFixture(fdef).setUserData("turtleHead");
+
+			// create player
+			turtle = new Turtle(body);
+			turtleArray.add(turtle);
+			body.setUserData(turtle);
+		}
+		player.totalTurtles = turtleArray.size;
+
+	}
+
+	/**
+	 * Creates the coin.
+	 *
+	 * @author Tim Killenberger
+	 */
+	private void createCoin() {
+
+		coinsArray = new Array<Coin>();
+
+		MapLayer layer = tileMap.getLayers().get("coins");
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+
+		for (MapObject mo : layer.getObjects()) {
+
+			bdef.type = BodyType.StaticBody;
+
+			float x = (float) mo.getProperties().get("x", Float.class)
+					/ B2DVars.PPM;
+			float y = (float) mo.getProperties().get("y", Float.class)
+					/ B2DVars.PPM;
+
+			bdef.position.set(x, y);
+
+			CircleShape cshape = new CircleShape();
+			cshape.setRadius(18 / B2DVars.PPM);
+			fdef.shape = cshape;
+			fdef.isSensor = true;
+			fdef.filter.categoryBits = B2DVars.BIT_COIN;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER;
+
+			Body body = world.createBody(bdef);
+			body.createFixture(fdef).setUserData("coin");
+
+			Coin c = new Coin(body);
+			coinsArray.add(c);
+
+			body.setUserData(c);
+		}
+	}
+	
+	/**
+	 * Creates the coin.
+	 *
+	 * @author Tim Killenberger
+	 */
+	private void createPowerupBlock() {
+
+		powerupArray = new Array<PowerupBlock>();
+
+		MapLayer layer = tileMap.getLayers().get("powerup");
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+
+		for (MapObject mo : layer.getObjects()) {
+
+			bdef.type = BodyType.StaticBody;
+
+			float x = (float) mo.getProperties().get("x", Float.class)
+					/ B2DVars.PPM;
+			float y = (float) mo.getProperties().get("y", Float.class)
+					/ B2DVars.PPM;
+
+			bdef.position.set(x, y);
+
+			CircleShape cshape = new CircleShape();
+			cshape.setRadius(18 / B2DVars.PPM);
+			fdef.shape = cshape;
+			fdef.isSensor = false;
+			fdef.filter.categoryBits = B2DVars.BIT_POWERUP;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER;
+
+			Body body = world.createBody(bdef);
+			body.createFixture(fdef).setUserData("powerup");
+
+			PowerupBlock p = new PowerupBlock(body);
+			powerupArray.add(p);
+
+			body.setUserData(p);
+		}
+	}
+
+	/**
+	 * Creates the water.
+	 *
+	 * @author Tim Killenberger
+	 */
+	private void createWater() {
+
+		waterArray = new Array<Water>();
+
+		MapLayer layer = tileMap.getLayers().get("Water");
+
+		BodyDef bdef = new BodyDef();
+		FixtureDef fdef = new FixtureDef();
+
+		for (MapObject mo : layer.getObjects()) {
+
+			bdef.type = BodyType.StaticBody;
+
+			float x = (float) mo.getProperties().get("x", Float.class)
+					/ B2DVars.PPM;
+			float y = (float) mo.getProperties().get("y", Float.class)
+					/ B2DVars.PPM;
+
+			bdef.position.set(x, y);
+
+			CircleShape cshape = new CircleShape();
+			cshape.setRadius(35 / B2DVars.PPM);
+			fdef.shape = cshape;
+			fdef.isSensor = true;
+			fdef.filter.categoryBits = B2DVars.BIT_WATER;
+			fdef.filter.maskBits = B2DVars.BIT_PLAYER;
+
+			Body body = world.createBody(bdef);
+			body.createFixture(fdef).setUserData("water");
+
+			Water w = new Water(body);
+			waterArray.add(w);
+
+			body.setUserData(w);
+		}
+	}
+
+	public World getWorld() {
 		return world;
 	}
 
 	public void setWorld(World world) {
-		Play.world = world;
+		this.world = world;
 	}
 
 	public Box2DDebugRenderer getB2dr() {

@@ -8,14 +8,14 @@ import com.badlogic.gdx.physics.box2d.Body;
 
 public class Coin extends B2DSprite {
 	
-	public Coin(Body body) {
-		
-		super(body);
-		
-		Texture tex = Game.ressources.getTexture("coin");
-		TextureRegion[] sprites = TextureRegion.split(tex, 22, 20)[0];
-		
-		setAnimation(sprites, 1 / 20f);
-	}
+
+	public Texture tex = Game.ressources.getTexture("coin");
+	public TextureRegion[] sprites;
+	public static int hp = 3;
 	
+	public Coin(Body body) {
+		super(body);
+		sprites = TextureRegion.split(tex, 22, 20)[0];				
+		setAnimation(sprites, 1 / 12f);				
+	}	
 }

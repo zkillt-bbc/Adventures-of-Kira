@@ -1,11 +1,13 @@
 package ch.bbc.zkillt;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
 import ch.bbc.zkillt.entities.Player;
 import ch.bbc.zkillt.handlers.Content;
 import ch.bbc.zkillt.handlers.GameStateManager;
 import ch.bbc.zkillt.handlers.MyInput;
 import ch.bbc.zkillt.handlers.MyInputProcessor;
-import ch.bbc.zkillt.handlers.WorldLoader;
 import ch.bbc.zkillt.states.Play;
 
 import com.badlogic.gdx.ApplicationListener;
@@ -17,10 +19,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Game implements ApplicationListener {
 	
+	
+	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	static double width = screenSize.getWidth();
+	static double height = screenSize.getHeight();
 	public static final String TITLE = "Adventures of Kira";
-	public static final int WINDOW_WIDTH = 1920;
-	public static final int WINDOW_HEIGHT = 1080;
-	public static final int SCALE = 1;
+	public static final int WINDOW_WIDTH = (int) width;
+	public static final int WINDOW_HEIGHT = (int) height;
+	public static final double SCALE = 0.5;
 	public static final float STEP = 1 / 60f;
 	private float accum;
 	private static int score;
@@ -46,11 +52,12 @@ public class Game implements ApplicationListener {
 		ressources.loadTexture("ressources/images/coins3.png", "coin");
 		ressources.loadTexture("ressources/images/coins3.png", "wasser");
 		ressources.loadTexture("ressources/images/enemy/turtle_sheet.png", "turtle");
+		ressources.loadTexture("ressources/images/block.png", "powerup");
 
 		
 		this.heart = new Texture(Gdx.files.internal("ressources/images/heart.png"));
 		this.coin = new Texture(Gdx.files.internal("ressources/images/single_coin.png"));
-		this.gameover = new Texture(Gdx.files.internal("ressources/images/gameover.png"));
+		this.gameover = new Texture(Gdx.files.internal("ressources/images/gameover2.png"));
 		this.turtleHead = new Texture(Gdx.files.internal("ressources/images/enemy/turtle_head.png"));
 
 		this.sb = new SpriteBatch();
@@ -78,12 +85,14 @@ public class Game implements ApplicationListener {
 			
 			bmf.setScale(2);
 			
+			//begins drawing
 			sb.begin();
 			sb.draw(coin, cam.position.x - 140, cam.position.y + 470, 30, 30);
 			sb.draw(turtleHead, cam.position.x + 20, cam.position.y + 470, 30, 30);
 			drawString(sb, "x  " + Player.getNumCoins(), cam.position.x - 100, cam.position.y + 500);
-			drawString(sb, " " + WorldLoader.player.numTurtles + " / " + WorldLoader.player.totalTurtles, cam.position.x + 55, cam.position.y + 500);
+			drawString(sb, " " + Play.getPlayer().numTurtles + " / " + Play.getPlayer().totalTurtles, cam.position.x + 55, cam.position.y + 500);
 			
+			// draws the hearts depending on the player hp
 			if(Player.hp > 0) {
 				for(int hp = Player.hp; hp > 0; hp--) {
 					sb.draw(heart, cam.position.x + space - 910, cam.position.y + 480, 30, 30);
@@ -96,11 +105,13 @@ public class Game implements ApplicationListener {
 			space = 0;
 			sb.end();
 			
-			cam.position.set(WorldLoader.getPlayer().getPosition().x * 100 + 480, WorldLoader.getPlayer().getPosition().y * 100 + 100, 0);
+			// start cam position
+			cam.position.set(Play.getPlayer().getPosition().x * 100 + 480, Play.getPlayer().getPosition().y * 100 + 100, 0);
 			cam.update();
 			}
 		}
 	
+	// draws an a string at the screen
 	private void drawString(SpriteBatch sb, String s, float x, float y) {
 		for(int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
@@ -214,5 +225,4 @@ public class Game implements ApplicationListener {
 	public static float getStep() {
 		return STEP;
 	}
-	
 }

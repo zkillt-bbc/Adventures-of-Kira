@@ -36,9 +36,10 @@ public class WorldLoader {
 	public static OrthogonalTiledMapRenderer tmr;
 	public static Player player;
 	public static Turtle turtle;
-	
-	public ArrayList<Object> worldObjects;
+	public static Coin coin;
 	public static Array<Coin> coinsArray;
+
+	public ArrayList<Object> worldObjects;
 	private static Array<Turtle> turtleArray;
 	private static Array<Water> waterArray;
 	private static MyContactListener cl;
@@ -64,14 +65,14 @@ public class WorldLoader {
 		// create tiles
 		createTiles();
 		
-		// create Coins
-		createCoin();
-		
 		// create Water
 		createWater();
 		
 		// create Turtle
 		createTurtle();
+		
+		// create Coins
+		createCoin();
 		
 		//create Finish line
 		createFinish();
@@ -309,10 +310,10 @@ public class WorldLoader {
 			Body body = world.createBody(bdef);
 			body.createFixture(fdef).setUserData("coin");
 			
-			Coin c = new Coin(body);
-			coinsArray.add(c);
+			coin = new Coin(body);
+			coinsArray.add(coin);
 			
-			body.setUserData(c);
+			body.setUserData(coin);
 		}
 	}
 	
@@ -369,8 +370,8 @@ public class WorldLoader {
 				shape = CollisionWorking.getRectangle((RectangleMapObject)mo);
 				bdef.type = BodyType.StaticBody;
 				
-				float x = (float) mo.getProperties().get("x", Float.class) / B2DVars.PPM  / 1.043f;
-				float y = (float) mo.getProperties().get("y", Float.class) / B2DVars.PPM / 0.89f;
+				float x = mo.getProperties().get("x", Float.class) / B2DVars.PPM;
+				float y = mo.getProperties().get("y", Float.class) / B2DVars.PPM;
 				
 				bdef.position.set(x, y);
 				

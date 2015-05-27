@@ -95,8 +95,8 @@ public class CollisionWorking {
 
         Rectangle rectangle = rectangleObject.getRectangle();
         PolygonShape polygon = new PolygonShape();
-        Vector2 size = new Vector2((rectangle.x + rectangle.width * 0.5f) / 1000, (rectangle.y + rectangle.height * 0.5f ) / 1000);
-        polygon.setAsBox(rectangle.width * 0.5f / B2DVars.PPM, rectangle.height * 0.5f / B2DVars.PPM, size, 0.0f);
+        Vector2 size = new Vector2((rectangle.x + rectangle.width) / 1000, (rectangle.y + rectangle.height ) / 1000);
+        polygon.setAsBox(rectangle.width / 2 / B2DVars.PPM, rectangle.height / 2 / B2DVars.PPM, size, 0.0f);
         return polygon;
     }
 	

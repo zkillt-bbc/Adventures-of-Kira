@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="140" height="18" tilewidth="69" tileheight="69" backgroundcolor="#808080" nextobjectid="861">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="140" height="18" tilewidth="69" tileheight="69" backgroundcolor="#808080" nextobjectid="866">
  <tileset firstgid="1" name="tiles_spritesheet" tilewidth="70" tileheight="70" spacing="2">
   <image source="tiles.png" width="914" height="936"/>
  </tileset>
@@ -16,17 +16,17 @@
  </tileset>
  <layer name="background" width="140" height="18">
   <data encoding="base64" compression="zlib">
-   eJztzbEJAAAIwDD//8DBX/1AEMQpgc6NAAAAALiXQwDAv/L0BAAAYK0BD5wHQQ==
+   eJzt0rEJAEAIA0D338DCXX+BRwhY3kHqQEgVAAAAwL1ewp9tSPgLkBqdOgEAAIg9uEQIcw==
   </data>
  </layer>
  <layer name="bg_deko" width="140" height="18">
   <data encoding="base64" compression="zlib">
-   eJzt0rEJgDAARNEM4xAO4gDW4kZZ1gQiSAiEiKLFe3D9FT8E4A1b2lS2fnuFn8utLGlz2R40Q1vdimboqVs5By16AZ4WO4MrvTBCL9ylF0bpBQAAgOwAkFwcEg==
+   eJzt0sEJgDAQRNE0YQGCRViIBXgUsSGxWTcYISwhUUE2kP9g7nP4zgH4wyobwmbbK6icb2WSjWGboxmk6VZoBiW6lXvI62WL9QkD9PKeb6WT7dZHUL24lZZ6OQpDWtxKS83Qyze6FXqhl5xWe4nRy3P0cqEXAAAAAIB3AjCdKkI=
   </data>
  </layer>
  <layer name="ground" width="140" height="18">
   <data encoding="base64" compression="zlib">
-   eJztlm0KxCAMRL3W3sgjtbdd/CEEaWqS1bWV92CgtGKTyfQjJQAAAAAAACjk1QUMIgtp10bsfaUdkP18Gsk+zyXVjaX0cgq11PO9+UayUPY9PMU+EI9/0bxk5fjftL3e9Sv7tuxj8aau82bmzf5F7yH36/U84x2uzdiith5tXQ+51pqZt/vneTbkPSraDO7mMeKfIpqVaK6u8Hq5i3+WzGjfuZnzmNHrL7W2eLzczb8j+TI+Yx4WrciKVqPHS/xDCCGEEELo2foCSfOc8g==
+   eJztVlsOgzAM67W4EUeC2058VIqiNElftGG2ZAltXWc7ppASAAAAAKzHuVoAEAr3agFAKPC+nAaB/wbvy21wV2id7u36rveQpauVByP1+YW+PF40jflza74tXXj2vWrEDsLIntbkJ/XF+x/S9dvgXjW/1LdnH08WeV1tZ3rym9kVT37ad9Ia3rPSDPhvRp/hpRl7yPW0nqd0rbcz0fOjPq3cpOdYaQbaPEa8U7R2pbVXErQsLd18j0j5ZZ9aX6g+ye+Meczw2qOVw7r/NN3aHhHyu1Jdx2fMw8MVXSlprMkS+YEgCIIgCILg3vwBzv29pQ==
   </data>
  </layer>
  <layer name="Water2" width="140" height="18" opacity="0.7">
@@ -41,7 +41,7 @@
  </layer>
  <layer name="decoration" width="140" height="18">
   <data encoding="base64" compression="zlib">
-   eJztzrEJgDAQhtHgDFZWqRzFATKgs8YilVhYJJzB9+Dn4KovJQC+YGkD6Gm7drQLb5TogEHO6AD4oTU6gKnk6ACmkh9+++0CAAAAQC8V8AUCDw==
+   eJzt0rsJgFAMBVBxBm2stHEUB3AKp3JWFV4lChY+4uccuARShFukKAB4gjIF4E7NmiFNuGKMLpDJnOFml+Em37T9Sh1dIkAVXeDhppP8VRtdgFdpD3b9bgIAAADAXRZtdwTW
   </data>
  </layer>
  <objectgroup color="#a0a0a4" name="coins">
@@ -311,9 +311,6 @@
   <object id="498" x="2250" y="525">
    <ellipse/>
   </object>
-  <object id="499" x="725" y="593">
-   <ellipse/>
-  </object>
   <object id="630" x="5872" y="664">
    <ellipse/>
   </object>
@@ -350,8 +347,22 @@
   <object id="641" x="4800" y="272">
    <ellipse/>
   </object>
+  <object id="862" x="3507" y="157">
+   <ellipse/>
+  </object>
+  <object id="863" x="3453" y="481">
+   <ellipse/>
+  </object>
+  <object id="864" x="3083" y="461">
+   <ellipse/>
+  </object>
  </objectgroup>
  <objectgroup name="finish">
-  <object id="856" x="441.697" y="293.697" width="36" height="396"/>
+  <object id="856" x="8966.58" y="-0.696939" width="36" height="396"/>
+ </objectgroup>
+ <objectgroup name="powerup">
+  <object id="865" x="1134" y="177">
+   <ellipse/>
+  </object>
  </objectgroup>
 </map>

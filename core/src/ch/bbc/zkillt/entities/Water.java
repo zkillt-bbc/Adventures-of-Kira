@@ -7,8 +7,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 
 public class Water extends B2DSprite {
-	public static int numCoins;
-	public static int totalCoins;
 	public Texture tex;
 	public TextureRegion[] sprites;
 	private int x = 0;
@@ -16,10 +14,9 @@ public class Water extends B2DSprite {
 	public Water(Body body) {
 		super(body);
 		
-		tex = Game.ressources.getTexture("wasser");
+		tex = Game.ressources.getTexture("coin");
 		sprites = TextureRegion.split(tex, 1, 1)[x];
 		setAnimation(sprites, 1 / 12f);
-		System.out.println("Sprites: " + sprites.length);
 	}
 	
 	public void changeRegion(int x, float delay) {

@@ -12,7 +12,7 @@ public abstract class GameState {
 	protected Game game;
 	
 	protected SpriteBatch sb;
-	protected OrthographicCamera cam;
+	public OrthographicCamera cam;
 	protected OrthographicCamera hudCam;
 	
 	protected GameState(GameStateManager gsm) {
