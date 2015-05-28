@@ -65,6 +65,9 @@ public class MyContactListener implements ContactListener {
 		if (fa.getUserData() != null && fa.getUserData().equals("water")) {
 			water = true;
 		}
+		if (fb.getUserData() != null && fb.getUserData().equals("powerup") && fa.getUserData() != null && fa.getUserData().equals("head")) {
+			System.out.println("POWERUP!!!!");
+		}
 	}
 	
 

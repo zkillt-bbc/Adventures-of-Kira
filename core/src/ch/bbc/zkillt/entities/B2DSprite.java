@@ -34,25 +34,24 @@ public class B2DSprite extends TextureRegion {
 	
 	public void render(SpriteBatch sb) {
 		sb.begin();
-	if(body.getUserData().toString().contains("Player") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 50, body.getPosition().y *B2DVars.PPM - 65, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
-	}
-	else if (body.getUserData().toString().contains("Coin") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
-	} 
-	else if (body.getUserData().toString().contains("Water") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM, body.getPosition().y *B2DVars.PPM , animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
-	}
-	else if (body.getUserData().toString().contains("Turtle") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
-	}
-	else if (body.getUserData().toString().contains("Powerup") == true) {
-		sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, 69, 69);
-	} else {
-		System.out.println("Fehler: Zu renderndes Objekt wurde nicht gefunden!");
-	}
-	sb.end();
-
+		if(body.getUserData().toString().contains("Player") == true) {
+			sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 50, body.getPosition().y *B2DVars.PPM - 65, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
+		}
+		else if (body.getUserData().toString().contains("Coin") == true) {
+			sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 15, animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
+		} 
+		else if (body.getUserData().toString().contains("Water") == true) {
+			sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM, body.getPosition().y *B2DVars.PPM , animation.getFrame().getRegionWidth() * 2, animation.getFrame().getRegionHeight() * 2);
+		}
+		else if (body.getUserData().toString().contains("Turtle") == true) {
+			sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, animation.getFrame().getRegionWidth() * 3, animation.getFrame().getRegionHeight() * 3);
+		}
+		else if (body.getUserData().toString().contains("Powerup") == true) {
+			sb.draw(animation.getFrame(), body.getPosition().x * B2DVars.PPM - 20, body.getPosition().y *B2DVars.PPM - 38, 69, 69);
+		} else {
+			System.out.println("Fehler: Zu renderndes Objekt wurde nicht gefunden!");
+		}
+		sb.end();
 }
 
 	

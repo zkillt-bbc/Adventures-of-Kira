@@ -7,11 +7,11 @@ public class PowerUpEntity {
 	private Play play;
 	
 	public void changeSpeed(float speed) {
-		Play.movement.x = speed;
+		Play.getMovement().x = speed;
 	}
 	
 	public void changeHealth(int health) {
-		Player.hp = Player.hp + health;
+		Player.setHp(Player.getHp() + health);
 	}
 	
 	public void changeGravit(float gravity) {

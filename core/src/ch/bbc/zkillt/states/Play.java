@@ -4,6 +4,7 @@ import box2dLight.ConeLight;
 import box2dLight.RayHandler;
 import ch.bbc.zkillt.Game;
 import ch.bbc.zkillt.entities.Coin;
+import ch.bbc.zkillt.entities.Mushroom;
 import ch.bbc.zkillt.entities.Player;
 import ch.bbc.zkillt.entities.PowerupBlock;
 import ch.bbc.zkillt.entities.Turtle;
@@ -38,9 +39,6 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
-
-
-
 public class Play extends GameState {
 
 	// ---------- Debugging ---------------------//
@@ -58,50 +56,52 @@ public class Play extends GameState {
 
 	// ---------- Class Instances ---------------//
 	
-	public static MusicPlayer mp;
-	public static Player player;
-	public static Turtle turtle;
-	private Array<Coin> coinsArray;
-	private Array<Turtle> turtleArray;
-	private Array<Water> waterArray;
+	public static MusicPlayer mp; // Musicplayer instance
+	public static Player player;	// Player instance
+	public static Turtle turtle;	// Turtle instance
+	private Array<Coin> coinsArray;	// Coin object array
+	private Array<Turtle> turtleArray;	// Turtle object array
+	private Array<Water> waterArray; // Water object array
 	private Array<PowerupBlock> powerupArray;
 
 
 	// ---------- World properties --------------//
 
-	private OrthogonalTiledMapRenderer tmr;
-	private World world;
-	public static Vector2 movement = new Vector2(0, 0);
-	private float speed = 6, gravity, nitro = 0.6f;
-	private final float TIMESTEP = 1 / 60;
+	private OrthogonalTiledMapRenderer tmr; // render
+	private static World world;
+	public static Vector2 movement = new Vector2(0, 0); // the player movement (x and y)
+	private float speed = 6, gravity, nitro = 0.6f; // world / movement variables
+	private final float TIMESTEP = 1 / 60; // refresh rate
 	private final int VELOCITYITERATIONS = 8, POSITIONITERAIONS = 3;
-	private boolean right = false;
-	private float desiredVelocity;
+	private boolean right = false; // enemy moving-direction boolean
+	private float desiredVelocity; // movement of the player
 
 	// ---------- Camera Positioning ------------//
 
-	private OrthographicCamera b2dCam;
-	float x = cam.position.x - cam.viewportWidth * cam.zoom;
-	float y = cam.position.y - cam.viewportHeight * cam.zoom;
-	float width = cam.viewportWidth * Game.WINDOW_WIDTH;
-	float height = cam.viewportHeight * Game.WINDOW_HEIGHT;
+	private OrthographicCamera b2dCam; // the camera of the b2d hitboxes
+	float x = cam.position.x - cam.viewportWidth * cam.zoom; // the x position if the camera 
+	float y = cam.position.y - cam.viewportHeight * cam.zoom; // the y position if the camera
+	float width = cam.viewportWidth * Game.WINDOW_WIDTH; // the width of the camera
+	float height = cam.viewportHeight * Game.WINDOW_HEIGHT; // the height of the camera
 
 	// ---------- Tilemap properties ------------//
 
-	private String mapPath;
-	private TiledMap tileMap;
-	private float tileSize;
+	private String mapPath; // path to choose the map
+	private TiledMap tileMap; // Tilemap instance for the properties and rendering
+	private MapProperties prop; // for the properties of the tilemap
+	private float tileSize; // the size of a tile in px 
+	private int mapWidth; // width in tiled units
+	private int mapHeight; // height in tiled units
+	private int tilePixelWidth; // tile width in px
+	private int tilePixelHeight; // tile height in px
+	private int mapPixelWidth; // map width in px
+	private int mapPixelHeight; // map height in px
 
-	private MapProperties prop;
-	private int mapWidth;
-	private int mapHeight;
-	private int tilePixelWidth;
-	private int tilePixelHeight;
-	private int mapPixelWidth;
-	private int mapPixelHeight;
+	private RayHandler rayHandler; // lightning handler
 
-	private RayHandler rayHandler;
-
+	
+	
+	
 	/**
 	 * The Constructor.
 	 *
@@ -115,9 +115,8 @@ public class Play extends GameState {
 	public Play(GameStateManager gsm, String mapPath, float gravity) {
 
 		super(gsm);
-
 		
-		new MusicPlayer(MusicPlayer.bgMusic, 0.3f, 1.3f, 1000);
+		new MusicPlayer(MusicPlayer.bgMusic, 0.3f, 1.3f, 1000); // background music
 		this.mapPath = mapPath;
 		this.gravity = gravity;
 		// set up box2d stuff
@@ -131,9 +130,6 @@ public class Play extends GameState {
 		 new ConeLight(rayHandler, 500,
 		 com.badlogic.gdx.graphics.Color.WHITE, 1920, cam.position.x - 200,
 		 cam.position.y + 600, -90, 45);
-		// new PointLight(rayHandler, 5000,
-		// com.badlogic.gdx.graphics.Color.YELLOW, 1200, cam.position.x,
-		// cam.position.y);
 
 		// create player
 		createPlayer();
@@ -155,8 +151,7 @@ public class Play extends GameState {
 
 		// set up box2d cam
 		b2dCam = new OrthographicCamera();
-		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM,
-				Game.WINDOW_HEIGHT / B2DVars.PPM);
+		b2dCam.setToOrtho(false, Game.WINDOW_WIDTH / B2DVars.PPM, Game.WINDOW_HEIGHT / B2DVars.PPM);
 	}
 
 	/**
@@ -167,45 +162,45 @@ public class Play extends GameState {
 	 */
 	public void update(float dt) {
 		
-		// --------- Player states -----------//
-		
-		
+		// --------- Player states -----------//		
 		
 		 if(Player.hp > 0 && player.getPosition().y > 0) {
 			 player.setOldX(player.getPosition().x);
 		 }
 		
 		 
+		 // checks if player is on ground
 		 if (!cl.isPlayerOnGround()) {
 			 gravity = gravity * 1.03f;
-			 System.out.println("Gravity: " + gravity);
-			 System.out.println("On Ground:" + cl.isPlayerOnGround());
 		 } else {
 			 gravity = 12;
 		 }
 		 
 		 
-		// in water
+		// checks if the player is in water
 		if (cl.isInWater()) {
 			gravity = 3;
 		}
 		
+		//checks if player collides with an enemy
 		if (cl.isEnemyCollision()) {
 			movement.y = speed / 1.25f;
 			cl.setEnemyCollision(false);
 		}
 
+		
+		// if player is alive the cam stops depending on where the map ends
 		if(Player.hp > 0 && player.getPosition().y >  2){
-			if (player.getPosition().x > 8 && player.getPosition().x < (getMapPixelWidth() - 1400) / B2DVars.PPM) {
+			if (player.getPosition().x > 8 && player.getPosition().x < (getMapPixelWidth() - 1400) / B2DVars.PPM) { // focuses the cam on the player
 				cam.position.set(Play.getPlayer().getPosition().x * 100 + Game.WINDOW_WIDTH / 10, Play.getPlayer().getPosition().y * 100 + Game.WINDOW_HEIGHT / 10, 0);
-			} else if (player.getPosition().x < 8) {
+			} else if (player.getPosition().x < 8) { // Cam stops at the left border of the map
 				cam.position.set(Game.WINDOW_HEIGHT / 1.1f, Play.getPlayer().getPosition().y * 100 + Game.WINDOW_HEIGHT / 10, 0);
-			} else if (player.getPosition().x > ((getMapPixelWidth()) - Game.WINDOW_WIDTH / 1.3f) / B2DVars.PPM) {
+			} else if (player.getPosition().x > ((getMapPixelWidth()) - Game.WINDOW_WIDTH / 1.3f) / B2DVars.PPM) { // Cam stops at the right border of the map
 				cam.position.set((getMapPixelWidth()) - Game.WINDOW_WIDTH / 1.6f, player.getPosition().y * 100 + Game.WINDOW_HEIGHT / 10, 0);
-			} else {
+			} else { // if cam is at an undefined position
 				System.out.println("NOTHING AT ALL!");
 			}
-		} else {
+		} else { // if player is dead camera stops at his death position
 			cam.position.set((float) (player.getOldX() * 100 + Game.WINDOW_WIDTH / 10), 5 + Game.WINDOW_HEIGHT / 1.5f, 0);
 			Player.hp = 0;
 			gravity = 0;
@@ -213,14 +208,10 @@ public class Play extends GameState {
 			movement.x = 0;
 			movement.y = speed / 1.5f;
 		}
-
-				
+		
 		cam.update();
-
-		// System.out.println("Gravity: " + gravity);
-
 		tmr.setView(cam.combined, x * 2, y, width, height);
-
+		
 		desiredVelocity = Math.min(movement.x, player.getBody().getLinearVelocity().x + nitro);
 
 		// apply gravity
@@ -231,7 +222,6 @@ public class Play extends GameState {
 		else if (movement.y < -speed)
 			movement.y = -speed;
 
-		System.out.println("Dead: " + dead);
 
 		if(!dead) {
 		// check input
@@ -357,7 +347,7 @@ public class Play extends GameState {
 		sb.end();
 
 		 //draw box2d world
-		 b2dr.render(world, b2dCam.combined);
+//		 b2dr.render(world, b2dCam.combined);
 		
 		if(Player.hp == 0) {
 		 rayHandler.updateAndRender();
@@ -777,8 +767,11 @@ public class Play extends GameState {
 
 			Coin c = new Coin(body);
 			coinsArray.add(c);
+			
 
 			body.setUserData(c);
+				Mushroom mush = new Mushroom(body);
+				mush.createMush();
 		}
 	}
 	
@@ -866,12 +859,12 @@ public class Play extends GameState {
 		}
 	}
 
-	public World getWorld() {
+	public static World getWorld() {
 		return world;
 	}
 
 	public void setWorld(World world) {
-		this.world = world;
+		Play.world = world;
 	}
 
 	public Box2DDebugRenderer getB2dr() {
